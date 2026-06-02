@@ -117,7 +117,7 @@
     let workers = [];
 
     async function init() {
-      const res = await fetch('/api/workers');
+      const res = await fetch(' + API + '/workers');
       workers = await res.json();
       const list = document.getElementById('worker-list');
       workers.forEach(w => {
@@ -148,7 +148,7 @@
         return;
       }
 
-      const res = await fetch('/api/login', {
+      const res = await fetch(' + API + '/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: user.name, pin })
@@ -183,19 +183,19 @@
       const today = getToday();
       const time = new Date().toISOString();
       const entry = { user_id: user.id, day: getDay(today), start_time: time };
-      await fetch('/api/entry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) });
+      await fetch(' + API + '/entry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) });
       load();
     }
 
     async function checkOut() {
       const today = getToday();
       const time = new Date().toISOString();
-      const res = await fetch(`/api/entries/${user.id}`);
+      const res = await fetch(` + API + '/entries/${user.id}`);
       const entries = await res.json();
       const entry = entries.find(e => e.day === getDay(today));
       if (entry) {
         const updated = { ...entry, end_time: time };
-        await fetch('/api/entry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updated) });
+        await fetch(' + API + '/entry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updated) });
       }
       load();
     }
@@ -206,7 +206,7 @@
       const job = document.getElementById('job').value;
       const materials = document.getElementById('materials').value;
       
-      const res = await fetch(`/api/entries/${user.id}`);
+      const res = await fetch(` + API + '/entries/${user.id}`);
       const entries = await res.json();
       const entry = entries.find(e => e.day === getDay(today)) || {};
       
@@ -220,7 +220,7 @@
         materials
       };
       
-      await fetch('/api/entry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      await fetch(' + API + '/entry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const msg = document.getElementById('msg');
       msg.textContent = '✅ Saved!';
       msg.classList.remove('hidden');
@@ -230,7 +230,7 @@
     }
 
     async function load() {
-      const res = await fetch(`/api/entries/${user.id}`);
+      const res = await fetch(` + API + '/entries/${user.id}`);
       const entries = res.ok ? await res.json() : [];
       render(entries);
     }
