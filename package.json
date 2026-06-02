@@ -1,11 +1,10 @@
 {
-  "name": "anlconstructions-timetracker",
-  "version": "2.0.0",
-  "description": "Time tracking app for Anlconstructions",
-  "main": "server.js",
+  "name": "anlconstructions",
+  "version": "1.0.0",
+  "main": "api.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node api.js",
+    "dev": "node api.js"
   },
   "dependencies": {
     "express": "^4.18.2",
