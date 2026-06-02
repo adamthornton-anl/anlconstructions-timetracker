@@ -3,36 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anlconstructions - Time Tracker</title>
+  <title>Anlconstructions Time Tracker</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a1a1a; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f0f4f8; color: #1a1a1a; }
     .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; text-align: center; }
-    .header h1 { font-size: 28px; margin-bottom: 4px; }
-    .container { max-width: 500px; margin: 20px auto; padding: 0 16px 40px; }
-    .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-    .form-group { margin-bottom: 16px; }
+    .header h1 { font-size: 28px; }
+    .container { max-width: 500px; margin: 20px auto; padding: 0 16px; }
+    .card { background: white; border-radius: 12px; padding: 20px; margin: 16px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
-    input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; font-family: inherit; }
-    input:focus, select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+    input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; margin-bottom: 12px; font-family: inherit; }
     button { width: 100%; padding: 14px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 8px; }
     button:hover { background: #5568d3; }
-    button:active { background: #4451b8; }
     button.success { background: #22c55e; }
     button.danger { background: #ef4444; }
     button.secondary { background: #64748b; }
-    .hidden { display: none; }
-    .error { color: #dc2626; background: #fee2e2; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
-    .time-big { font-size: 32px; font-weight: 700; text-align: center; color: #667eea; margin: 24px 0; font-family: monospace; }
+    .hidden { display: none !important; }
+    .error { background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
     .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 20px 0; }
-    .cell { background: #f0f4f8; padding: 12px; border-radius: 8px; text-align: center; }
-    .cell-day { font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
-    .cell-hours { font-size: 16px; font-weight: 700; }
+    .cell { background: #f0f4f8; padding: 12px; border-radius: 8px; text-align: center; font-weight: 600; }
     .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
     .stat { background: #f0f4f8; padding: 16px; border-radius: 8px; text-align: center; }
-    .stat-label { font-size: 12px; font-weight: 600; color: #64748b; }
-    .stat-value { font-size: 24px; font-weight: 700; color: #667eea; margin-top: 8px; }
-    .button-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    .stat-label { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+    .stat-value { font-size: 24px; font-weight: 700; color: #667eea; }
+    .clock { font-size: 36px; font-weight: 700; text-align: center; color: #667eea; margin: 20px 0; font-family: monospace; }
+    .button-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .button-row button { margin-bottom: 0; }
   </style>
 </head>
@@ -43,270 +38,214 @@
   </div>
 
   <div class="container">
-    <!-- LOGIN SCREEN -->
-    <div id="loginScreen">
+    <!-- LOGIN -->
+    <div id="login">
       <div class="card">
-        <h2 style="margin-bottom: 20px;">👤 Login</h2>
-        <div id="loginError" class="hidden error"></div>
+        <h2 style="margin-bottom: 20px;">Login</h2>
+        <div id="loginErr" class="hidden error"></div>
         
-        <div class="form-group">
-          <label>Worker Name</label>
-          <select id="workerSelect">
-            <option value="">-- Select a worker --</option>
-            <option value="Adam">Adam ($81.49/hr)</option>
-            <option value="James">James ($48.65/hr)</option>
-            <option value="Brady">Brady ($29.95/hr)</option>
-            <option value="Drew">Drew ($81.49/hr)</option>
-          </select>
-        </div>
+        <label>Worker</label>
+        <select id="wName">
+          <option value="">-- Select --</option>
+          <option value="Adam">Adam</option>
+          <option value="James">James</option>
+          <option value="Brady">Brady</option>
+          <option value="Drew">Drew</option>
+        </select>
         
-        <div class="form-group">
-          <label>PIN</label>
-          <input type="password" id="pinInput" maxlength="4" placeholder="4-digit PIN">
-        </div>
+        <label>PIN</label>
+        <input type="password" id="wPin" maxlength="4" placeholder="4-digit PIN">
         
-        <button onclick="handleLogin()">Login</button>
+        <button type="button" onclick="login()">LOGIN</button>
       </div>
     </div>
 
-    <!-- TRACKER SCREEN -->
-    <div id="trackerScreen" class="hidden">
+    <!-- TRACKER -->
+    <div id="tracker" class="hidden">
       <div class="card">
-        <h2 id="welcome" style="margin-bottom: 20px;"></h2>
-        <div id="msg" class="hidden"></div>
-
-        <div class="time-big" id="clock"></div>
+        <h2 id="title" style="margin-bottom: 20px;"></h2>
+        
+        <div class="clock" id="time"></div>
 
         <div class="button-row">
-          <button class="success" onclick="handleCheckIn()">✓ Check In</button>
-          <button class="danger" onclick="handleCheckOut()">✗ Check Out</button>
+          <button type="button" class="success" onclick="checkIn()">Check In</button>
+          <button type="button" class="danger" onclick="checkOut()">Check Out</button>
         </div>
 
-        <div class="form-group">
-          <label>Lunch Break</label>
-          <select id="lunchSelect">
-            <option value="0">None</option>
-            <option value="30">30 min</option>
-            <option value="45">45 min</option>
-            <option value="60">1 hour</option>
-          </select>
-        </div>
+        <label>Lunch</label>
+        <select id="lunch">
+          <option value="0">None</option>
+          <option value="30">30 min</option>
+          <option value="45">45 min</option>
+          <option value="60">1 hour</option>
+        </select>
 
-        <div class="grid" id="weekGrid"></div>
+        <div class="grid" id="week"></div>
 
         <div class="stats">
           <div class="stat">
             <div class="stat-label">Hours</div>
-            <div class="stat-value" id="totalHours">0.0</div>
+            <div class="stat-value" id="hours">0.0</div>
           </div>
           <div class="stat">
             <div class="stat-label">Pay</div>
-            <div class="stat-value" id="totalPay">$0.00</div>
+            <div class="stat-value" id="pay">$0.00</div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label>Job / Location</label>
-          <input type="text" id="jobInput" placeholder="e.g., Main St Renovation">
-        </div>
+        <label>Job</label>
+        <input type="text" id="job" placeholder="Job location">
 
-        <div class="form-group">
-          <label>Materials</label>
-          <textarea id="materialsInput" placeholder="Concrete, nails..." style="height: 80px;"></textarea>
-        </div>
+        <label>Materials</label>
+        <textarea id="materials" placeholder="Materials needed" style="height: 80px;"></textarea>
 
-        <button class="success" onclick="handleSave()" style="margin-bottom: 12px;">💾 Save</button>
-        <button class="secondary" onclick="handleLogout()">Logout</button>
+        <button type="button" class="success" onclick="save()">SAVE</button>
+        <button type="button" class="secondary" onclick="logout()">LOGOUT</button>
       </div>
     </div>
   </div>
 
   <script>
-    let currentUser = null;
+    let user = null;
 
-    async function init() {
-      updateTime();
-      setInterval(updateTime, 1000);
+    function tick() {
+      const now = new Date();
+      document.getElementById('time').textContent = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
     }
 
-    async function handleLogin() {
-      const name = document.getElementById('workerSelect').value;
-      const pin = document.getElementById('pinInput').value;
-      const err = document.getElementById('loginError');
-      
+    setInterval(tick, 1000);
+    tick();
+
+    async function login() {
+      const name = document.getElementById('wName').value;
+      const pin = document.getElementById('wPin').value;
+      const err = document.getElementById('loginErr');
+
+      err.classList.add('hidden');
+
       if (!name) {
         err.textContent = 'Select a worker';
         err.classList.remove('hidden');
         return;
       }
 
-      if (!pin) {
-        err.textContent = 'Enter PIN';
+      if (pin.length !== 4) {
+        err.textContent = 'Enter 4-digit PIN';
         err.classList.remove('hidden');
         return;
       }
 
-      try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, pin })
-        });
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, pin })
+      });
 
-        const data = await res.json();
-        if (data.ok && data.user) {
-          currentUser = data.user;
-          document.getElementById('loginScreen').classList.add('hidden');
-          document.getElementById('trackerScreen').classList.remove('hidden');
-          document.getElementById('welcome').textContent = currentUser.name + "'s Time Tracker";
-          loadEntries();
-        } else {
-          err.textContent = 'Invalid PIN';
-          err.classList.remove('hidden');
-        }
-      } catch (e) {
-        err.textContent = 'Error: ' + e.message;
+      const data = await res.json();
+
+      if (!data.ok) {
+        err.textContent = 'Invalid PIN';
         err.classList.remove('hidden');
+        return;
       }
+
+      user = data.user;
+      document.getElementById('login').classList.add('hidden');
+      document.getElementById('tracker').classList.remove('hidden');
+      document.getElementById('title').textContent = user.name;
+      load();
     }
 
-    function handleLogout() {
-      currentUser = null;
-      document.getElementById('trackerScreen').classList.add('hidden');
-      document.getElementById('loginScreen').classList.remove('hidden');
-      document.getElementById('pinInput').value = '';
-      document.getElementById('workerSelect').value = '';
+    function logout() {
+      user = null;
+      document.getElementById('tracker').classList.add('hidden');
+      document.getElementById('login').classList.remove('hidden');
+      document.getElementById('wPin').value = '';
+      document.getElementById('wName').value = '';
     }
 
-    function updateTime() {
-      const now = new Date();
-      document.getElementById('clock').textContent = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    }
-
-    async function handleCheckIn() {
-      if (!currentUser) return;
-      const today = getToday();
-      const time = new Date().toISOString();
-      const day = getDay(today);
-
-      await fetch('/api/entry', {
+    async function checkIn() {
+      const res = await fetch('/api/entry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: currentUser.id,
-          day: day,
-          start_time: time
+          user_id: user.id,
+          day: getDay(),
+          start_time: new Date().toISOString()
         })
       });
-
-      loadEntries();
+      load();
     }
 
-    async function handleCheckOut() {
-      if (!currentUser) return;
-      const today = getToday();
-      const time = new Date().toISOString();
-      const day = getDay(today);
-
-      const res = await fetch('/api/entries/' + currentUser.id);
+    async function checkOut() {
+      const res = await fetch('/api/entries/' + user.id);
       const entries = await res.json();
-      const entry = entries.find(e => e.day === day);
-
+      const entry = entries.find(e => e.day === getDay());
       if (entry) {
         await fetch('/api/entry', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ...entry,
-            end_time: time
-          })
+          body: JSON.stringify({ ...entry, end_time: new Date().toISOString() })
         });
       }
-
-      loadEntries();
+      load();
     }
 
-    async function handleSave() {
-      if (!currentUser) return;
-      const today = getToday();
-      const day = getDay(today);
-      const lunch = parseInt(document.getElementById('lunchSelect').value);
-      const job = document.getElementById('jobInput').value;
-      const materials = document.getElementById('materialsInput').value;
-
-      const res = await fetch('/api/entries/' + currentUser.id);
+    async function save() {
+      const res = await fetch('/api/entries/' + user.id);
       const entries = await res.json();
-      const entry = entries.find(e => e.day === day) || {};
+      const entry = entries.find(e => e.day === getDay()) || {};
 
       await fetch('/api/entry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: currentUser.id,
-          day: day,
+          user_id: user.id,
+          day: getDay(),
           start_time: entry.start_time,
           end_time: entry.end_time,
-          lunch_mins: lunch,
-          job: job,
-          materials: materials
+          lunch_mins: parseInt(document.getElementById('lunch').value),
+          job: document.getElementById('job').value,
+          materials: document.getElementById('materials').value
         })
       });
 
-      const msg = document.getElementById('msg');
-      msg.textContent = '✅ Saved!';
-      msg.classList.remove('hidden');
-      setTimeout(() => msg.classList.add('hidden'), 2000);
-
-      loadEntries();
+      alert('Saved!');
+      load();
     }
 
-    async function loadEntries() {
-      if (!currentUser) return;
-
-      const res = await fetch('/api/entries/' + currentUser.id);
+    async function load() {
+      const res = await fetch('/api/entries/' + user.id);
       const entries = await res.json();
-      renderWeek(entries);
-    }
 
-    function renderWeek(entries) {
-      const grid = document.getElementById('weekGrid');
+      const grid = document.getElementById('week');
       grid.innerHTML = '';
       const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-      let totalHours = 0;
+      let total = 0;
 
-      days.forEach(day => {
-        const entry = entries.find(e => e.day === day);
-        let hours = 0;
-
-        if (entry && entry.start_time && entry.end_time) {
-          const start = new Date(entry.start_time);
-          const end = new Date(entry.end_time);
-          const minutes = (end - start) / 60000 - (entry.lunch_mins || 0);
-          hours = Math.max(0, minutes / 60);
-          totalHours += hours;
+      days.forEach(d => {
+        const e = entries.find(x => x.day === d);
+        let h = 0;
+        if (e && e.start_time && e.end_time) {
+          const mins = (new Date(e.end_time) - new Date(e.start_time)) / 60000 - (e.lunch_mins || 0);
+          h = Math.max(0, mins / 60);
+          total += h;
         }
-
         const cell = document.createElement('div');
         cell.className = 'cell';
-        cell.innerHTML = '<div class="cell-day">' + day + '</div><div class="cell-hours">' + hours.toFixed(1) + 'h</div>';
+        cell.textContent = d + '\n' + h.toFixed(1) + 'h';
         grid.appendChild(cell);
       });
 
-      document.getElementById('totalHours').textContent = totalHours.toFixed(1);
-      document.getElementById('totalPay').textContent = '$' + (totalHours * currentUser.hourly_rate).toFixed(2);
+      document.getElementById('hours').textContent = total.toFixed(1);
+      document.getElementById('pay').textContent = '$' + (total * user.hourly_rate).toFixed(2);
     }
 
-    function getToday() {
+    function getDay() {
       const d = new Date();
-      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    }
-
-    function getDay(date) {
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      return days[date.getDay()];
+      return days[d.getDay()];
     }
-
-    init();
   </script>
 </body>
 </html>
