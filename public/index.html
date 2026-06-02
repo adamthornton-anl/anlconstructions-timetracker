@@ -1,185 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AnlConstructions - Time Tracker</title>
+  <title>Time Tracker - AnlConstructions</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #1a1a1a;
-      min-height: 100vh;
-      padding-bottom: 40px;
-    }
-    
-    .header {
-      background: rgba(0,0,0,0.1);
-      color: white;
-      padding: 20px;
-      text-align: center;
-      border-bottom: 2px solid rgba(255,255,255,0.1);
-    }
-    
-    .header h1 { font-size: 24px; margin-bottom: 4px; }
-    .header p { font-size: 12px; opacity: 0.9; }
-    
-    .container { max-width: 480px; margin: 0 auto; padding: 20px; }
-    
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-      margin-bottom: 20px;
-    }
-    
-    h2 { font-size: 20px; margin-bottom: 20px; color: #1a1a1a; }
-    
-    .form-group {
-      margin-bottom: 16px;
-    }
-    
-    label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 8px;
-      font-size: 14px;
-      color: #333;
-    }
-    
-    input, select, textarea {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 16px;
-      font-family: inherit;
-      transition: border-color 0.3s;
-    }
-    
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-    
-    .button-group {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    
-    button {
-      padding: 14px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-      width: 100%;
-    }
-    
-    button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-    button:active { transform: translateY(0); }
-    
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #333; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; }
+    .container { max-width: 500px; margin: 20px auto; padding: 0 20px; }
+    .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 20px; margin-bottom: 20px; }
+    label { display: block; font-weight: 600; margin: 12px 0 6px; }
+    input, select, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; margin-bottom: 12px; font-family: inherit; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+    button { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 8px; transition: 0.2s; }
     .btn-primary { background: #667eea; color: white; }
     .btn-primary:hover { background: #5568d3; }
-    
+    .btn-primary:active { background: #4451b8; }
     .btn-success { background: #22c55e; color: white; }
     .btn-success:hover { background: #16a34a; }
-    
     .btn-danger { background: #ef4444; color: white; }
     .btn-danger:hover { background: #dc2626; }
-    
     .btn-secondary { background: #64748b; color: white; }
     .btn-secondary:hover { background: #475569; }
-    
-    .btn-full { grid-column: 1 / -1; }
-    
     .hidden { display: none !important; }
-    
-    .alert {
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      font-size: 14px;
-    }
-    
-    .alert-error { background: #fee2e2; color: #dc2626; border-left: 4px solid #dc2626; }
-    .alert-success { background: #dcfce7; color: #16a34a; border-left: 4px solid #16a34a; }
-    
-    .clock {
-      font-size: 48px;
-      font-weight: 700;
-      text-align: center;
-      color: #667eea;
-      margin: 24px 0;
-      font-family: 'Monaco', monospace;
-      letter-spacing: 2px;
-    }
-    
-    .week-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-      margin: 20px 0;
-    }
-    
-    .day-cell {
-      background: #f0f4f8;
-      padding: 16px 8px;
-      border-radius: 8px;
-      text-align: center;
-      border: 2px solid transparent;
-      transition: all 0.3s;
-    }
-    
-    .day-cell:hover { border-color: #667eea; background: #f8faff; }
-    
-    .day-label { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 8px; }
-    .day-hours { font-size: 18px; font-weight: 700; color: #667eea; }
-    
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin: 20px 0;
-    }
-    
-    .stat-box {
-      background: #f0f4f8;
-      padding: 16px;
-      border-radius: 8px;
-      text-align: center;
-    }
-    
-    .stat-label { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 8px; }
-    .stat-value { font-size: 24px; font-weight: 700; color: #667eea; }
-    
-    .worker-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    
-    .worker-btn {
-      padding: 12px;
-      background: #f0f4f8;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 500;
-      text-align: left;
-      transition: all 0.3s;
-    }
-    
+    .error { background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+    .success { background: #dcfce7; color: #16a34a; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+    .worker-list { display: grid; gap: 8px; margin-bottom: 16px; }
+    .worker-btn { padding: 12px; background: #f0f0f0; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 500; text-align: left; transition: 0.2s; }
     .worker-btn:hover { border-color: #667eea; background: #f8faff; }
-    .worker-btn.active { background: #667eea; color: white; border-color: #667eea; }
+    .worker-btn.selected { background: #667eea; color: white; border-color: #667eea; }
+    .clock { font-size: 48px; font-weight: 700; text-align: center; color: #667eea; margin: 20px 0; font-family: monospace; }
+    .button-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    .button-row button { margin-bottom: 0; }
+    .week-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 20px 0; }
+    .day-cell { background: #f0f0f0; padding: 12px 8px; border-radius: 8px; text-align: center; }
+    .day-label { font-size: 12px; font-weight: 600; color: #666; margin-bottom: 6px; }
+    .day-hours { font-size: 18px; font-weight: 700; color: #667eea; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+    .stat { background: #f0f0f0; padding: 16px; border-radius: 8px; text-align: center; }
+    .stat-label { font-size: 12px; font-weight: 600; color: #666; margin-bottom: 8px; }
+    .stat-value { font-size: 24px; font-weight: 700; color: #667eea; }
   </style>
 </head>
 <body>
@@ -189,78 +52,65 @@
   </div>
 
   <div class="container">
-    <!-- LOGIN SCREEN -->
-    <div id="loginScreen">
+    <!-- LOGIN PAGE -->
+    <div id="page-login">
       <div class="card">
-        <h2>👤 Login</h2>
-        <div id="loginError" class="hidden alert alert-error"></div>
+        <h2>Login</h2>
+        <div id="login-error" class="hidden error"></div>
         
-        <div class="form-group">
-          <label>Select Worker</label>
-          <div class="worker-grid" id="workerList"></div>
-        </div>
+        <label>Select Your Name</label>
+        <div class="worker-list" id="worker-list"></div>
         
-        <div class="form-group">
-          <label>PIN (4 digits)</label>
-          <input type="password" id="pinInput" maxlength="4" placeholder="0000" inputmode="numeric">
-        </div>
+        <label>Enter PIN</label>
+        <input type="password" id="pin-input" maxlength="4" placeholder="0000" inputmode="numeric">
         
-        <button class="btn-primary btn-full" onclick="app.login()">LOGIN</button>
+        <button class="btn-primary" onclick="App.login()">LOGIN</button>
       </div>
     </div>
 
-    <!-- TRACKER SCREEN -->
-    <div id="trackerScreen" class="hidden">
+    <!-- TRACKER PAGE -->
+    <div id="page-tracker" class="hidden">
       <div class="card">
-        <h2 id="workerName"></h2>
-        <div id="trackerMessage" class="hidden alert"></div>
+        <h2 id="worker-title"></h2>
+        <div id="tracker-message" class="hidden success"></div>
         
-        <div class="clock" id="currentTime"></div>
+        <div class="clock" id="clock-display">00:00:00</div>
         
-        <div class="button-group">
-          <button class="btn-success" onclick="app.checkIn()">✓ CHECK IN</button>
-          <button class="btn-danger" onclick="app.checkOut()">✗ CHECK OUT</button>
+        <div class="button-row">
+          <button class="btn-success" onclick="App.checkIn()">✓ CHECK IN</button>
+          <button class="btn-danger" onclick="App.checkOut()">✗ CHECK OUT</button>
         </div>
 
-        <div class="form-group">
-          <label>Lunch Break</label>
-          <select id="lunchBreak">
-            <option value="0">No break</option>
-            <option value="30">30 minutes</option>
-            <option value="45">45 minutes</option>
-            <option value="60">1 hour</option>
-          </select>
-        </div>
+        <label>Lunch Break</label>
+        <select id="lunch-select">
+          <option value="0">No break</option>
+          <option value="30">30 minutes</option>
+          <option value="45">45 minutes</option>
+          <option value="60">1 hour</option>
+        </select>
 
-        <h3 style="margin: 24px 0 16px; font-size: 16px;">Weekly Hours</h3>
-        <div class="week-grid" id="weekGrid"></div>
+        <h3 style="margin-top: 24px; margin-bottom: 12px; font-size: 16px;">Weekly Hours</h3>
+        <div class="week-grid" id="week-grid"></div>
 
-        <div class="stats-grid">
-          <div class="stat-box">
+        <div class="stats">
+          <div class="stat">
             <div class="stat-label">Total Hours</div>
-            <div class="stat-value" id="totalHours">0.0</div>
+            <div class="stat-value" id="total-hours">0.0</div>
           </div>
-          <div class="stat-box">
+          <div class="stat">
             <div class="stat-label">Weekly Pay</div>
-            <div class="stat-value" id="weeklyPay">$0.00</div>
+            <div class="stat-value" id="weekly-pay">$0.00</div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label>Job / Location</label>
-          <input type="text" id="jobInput" placeholder="e.g., 123 Main St, Perth">
-        </div>
+        <label>Job / Location</label>
+        <input type="text" id="job-input" placeholder="e.g., 123 Main St">
 
-        <div class="form-group">
-          <label>Materials / Supplies Needed</label>
-          <textarea id="materialsInput" placeholder="Concrete, timber, nails, etc." style="height: 80px;"></textarea>
-        </div>
+        <label>Materials Needed</label>
+        <textarea id="materials-input" placeholder="Concrete, nails, timber..." style="height: 80px;"></textarea>
 
-        <div class="button-group">
-          <button class="btn-success btn-full" onclick="app.saveEntry()">💾 SAVE ENTRY</button>
-        </div>
-
-        <button class="btn-secondary btn-full" onclick="app.logout()">LOGOUT</button>
+        <button class="btn-success" onclick="App.save()" style="margin-bottom: 12px;">💾 SAVE ENTRY</button>
+        <button class="btn-secondary" onclick="App.logout()">LOGOUT</button>
       </div>
     </div>
   </div>
@@ -273,182 +123,167 @@
       'Drew': { id: '3397c62c-b85e-4cda-ac24-fd138b1eb74a', pin: '8159', rate: 81.49 }
     };
 
-    const app = {
-      currentUser: null,
-      currentDay: null,
+    const App = {
+      user: null,
+      selectedWorker: null,
       entries: {},
 
-      async init() {
-        this.buildWorkerList();
-        this.updateTime();
-        setInterval(() => this.updateTime(), 1000);
-        await this.loadEntries();
+      init() {
+        this.renderWorkers();
+        this.updateClock();
+        setInterval(() => this.updateClock(), 1000);
       },
 
-      buildWorkerList() {
-        const list = document.getElementById('workerList');
+      renderWorkers() {
+        const list = document.getElementById('worker-list');
         Object.keys(WORKERS).forEach(name => {
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = 'worker-btn';
           btn.textContent = name + ' • $' + WORKERS[name].rate.toFixed(2) + '/hr';
-          btn.onclick = () => this.selectWorker(name);
+          btn.onclick = () => this.selectWorker(name, btn);
           list.appendChild(btn);
         });
       },
 
-      selectWorker(name) {
-        this.currentUser = WORKERS[name];
-        this.currentUser.name = name;
-        document.querySelectorAll('.worker-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
+      selectWorker(name, btn) {
+        this.selectedWorker = name;
+        document.querySelectorAll('.worker-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
       },
 
-      async login() {
-        const pin = document.getElementById('pinInput').value;
-        const err = document.getElementById('loginError');
+      login() {
+        const pin = document.getElementById('pin-input').value;
+        const err = document.getElementById('login-error');
         err.classList.add('hidden');
 
-        if (!this.currentUser) {
-          err.textContent = '⚠️ Select a worker first';
+        if (!this.selectedWorker) {
+          err.textContent = 'Please select a worker';
           err.classList.remove('hidden');
           return;
         }
 
         if (pin.length !== 4) {
-          err.textContent = '⚠️ PIN must be 4 digits';
+          err.textContent = 'PIN must be 4 digits';
           err.classList.remove('hidden');
           return;
         }
 
-        if (pin !== this.currentUser.pin) {
-          err.textContent = '⚠️ Invalid PIN';
+        const worker = WORKERS[this.selectedWorker];
+        if (pin !== worker.pin) {
+          err.textContent = 'Invalid PIN';
           err.classList.remove('hidden');
           return;
         }
 
-        // Login successful
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('trackerScreen').classList.remove('hidden');
-        document.getElementById('workerName').textContent = this.currentUser.name + "'s Time Tracker";
-        await this.loadEntries();
+        // Success
+        this.user = { name: this.selectedWorker, ...worker };
+        document.getElementById('page-login').classList.add('hidden');
+        document.getElementById('page-tracker').classList.remove('hidden');
+        document.getElementById('worker-title').textContent = this.user.name + "'s Time Tracker";
+        this.loadEntries();
       },
 
       logout() {
-        this.currentUser = null;
-        document.getElementById('trackerScreen').classList.add('hidden');
-        document.getElementById('loginScreen').classList.remove('hidden');
-        document.getElementById('pinInput').value = '';
+        this.user = null;
+        this.selectedWorker = null;
+        document.getElementById('page-tracker').classList.add('hidden');
+        document.getElementById('page-login').classList.remove('hidden');
+        document.getElementById('pin-input').value = '';
+        document.getElementById('worker-list').querySelectorAll('button').forEach(b => b.classList.remove('selected'));
       },
 
-      updateTime() {
+      updateClock() {
         const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const mins = String(now.getMinutes()).padStart(2, '0');
-        const secs = String(now.getSeconds()).padStart(2, '0');
-        document.getElementById('currentTime').textContent = hours + ':' + mins + ':' + secs;
+        const h = String(now.getHours()).padStart(2, '0');
+        const m = String(now.getMinutes()).padStart(2, '0');
+        const s = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('clock-display').textContent = h + ':' + m + ':' + s;
       },
 
       async checkIn() {
         const day = this.getDay();
         const time = new Date().toISOString();
         
-        if (!this.entries[day]) {
-          this.entries[day] = {};
+        const res = await fetch('/api/entry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: this.user.id,
+            day: day,
+            start_time: time
+          })
+        });
+
+        if (res.ok) {
+          this.showMessage('✓ Checked in');
+          this.loadEntries();
         }
-        
-        this.entries[day].start_time = time;
-        this.entries[day].day = day;
-        this.entries[day].user_id = this.currentUser.id;
-        
-        this.saveToServer();
-        this.showMessage('✓ Checked in at ' + new Date().toLocaleTimeString('en-AU'));
-        await this.loadEntries();
       },
 
       async checkOut() {
         const day = this.getDay();
         const time = new Date().toISOString();
-        
-        if (!this.entries[day]) {
-          this.entries[day] = {};
+
+        const res = await fetch('/api/entry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: this.user.id,
+            day: day,
+            end_time: time
+          })
+        });
+
+        if (res.ok) {
+          this.showMessage('✓ Checked out');
+          this.loadEntries();
         }
-        
-        this.entries[day].end_time = time;
-        this.entries[day].day = day;
-        this.entries[day].user_id = this.currentUser.id;
-        
-        this.saveToServer();
-        this.showMessage('✗ Checked out at ' + new Date().toLocaleTimeString('en-AU'));
-        await this.loadEntries();
       },
 
-      async saveEntry() {
+      async save() {
         const day = this.getDay();
-        const lunch = parseInt(document.getElementById('lunchBreak').value);
-        const job = document.getElementById('jobInput').value;
-        const materials = document.getElementById('materialsInput').value;
-        
-        if (!this.entries[day]) {
-          this.entries[day] = {};
-        }
-        
-        this.entries[day].user_id = this.currentUser.id;
-        this.entries[day].day = day;
-        this.entries[day].lunch_mins = lunch;
-        this.entries[day].job = job;
-        this.entries[day].materials = materials;
-        
-        await this.saveToServer();
-        this.showMessage('✅ Entry saved successfully!');
-        await this.loadEntries();
-      },
+        const lunch = parseInt(document.getElementById('lunch-select').value);
+        const job = document.getElementById('job-input').value;
+        const materials = document.getElementById('materials-input').value;
 
-      async saveToServer() {
-        const day = this.getDay();
-        if (!this.entries[day]) return;
-        
-        try {
-          const res = await fetch('/api/entry', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(this.entries[day])
-          });
-          
-          if (res.ok) {
-            const data = await res.json();
-            if (data) {
-              this.entries[day] = data;
-            }
-          }
-        } catch (e) {
-          console.error('Save error:', e);
+        const res = await fetch('/api/entry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: this.user.id,
+            day: day,
+            lunch_mins: lunch,
+            job: job,
+            materials: materials
+          })
+        });
+
+        if (res.ok) {
+          this.showMessage('✅ Entry saved');
+          this.loadEntries();
         }
       },
 
       async loadEntries() {
-        try {
-          const res = await fetch('/api/entries/' + this.currentUser.id);
-          if (res.ok) {
-            const data = await res.json();
-            if (data && Array.isArray(data)) {
-              data.forEach(entry => {
-                this.entries[entry.day] = entry;
-              });
-            }
+        const res = await fetch('/api/entries/' + this.user.id);
+        if (res.ok) {
+          const data = await res.json();
+          this.entries = {};
+          if (Array.isArray(data)) {
+            data.forEach(entry => {
+              this.entries[entry.day] = entry;
+            });
           }
-        } catch (e) {
-          console.error('Load error:', e);
         }
-        
         this.renderWeek();
       },
 
       renderWeek() {
-        const grid = document.getElementById('weekGrid');
+        const grid = document.getElementById('week-grid');
         grid.innerHTML = '';
         const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-        let totalHours = 0;
+        let total = 0;
 
         days.forEach(day => {
           const entry = this.entries[day];
@@ -457,9 +292,9 @@
           if (entry && entry.start_time && entry.end_time) {
             const start = new Date(entry.start_time);
             const end = new Date(entry.end_time);
-            const minutes = (end - start) / 60000 - (entry.lunch_mins || 0);
-            hours = Math.max(0, minutes / 60);
-            totalHours += hours;
+            const mins = (end - start) / 60000 - (entry.lunch_mins || 0);
+            hours = Math.max(0, mins / 60);
+            total += hours;
           }
 
           const cell = document.createElement('div');
@@ -468,16 +303,15 @@
           grid.appendChild(cell);
         });
 
-        document.getElementById('totalHours').textContent = totalHours.toFixed(1);
-        document.getElementById('weeklyPay').textContent = '$' + (totalHours * this.currentUser.rate).toFixed(2);
+        document.getElementById('total-hours').textContent = total.toFixed(1);
+        document.getElementById('weekly-pay').textContent = '$' + (total * this.user.rate).toFixed(2);
       },
 
       showMessage(msg) {
-        const el = document.getElementById('trackerMessage');
+        const el = document.getElementById('tracker-message');
         el.textContent = msg;
-        el.classList.remove('hidden', 'alert-error');
-        el.classList.add('alert-success');
-        setTimeout(() => el.classList.add('hidden'), 3000);
+        el.classList.remove('hidden');
+        setTimeout(() => el.classList.add('hidden'), 2000);
       },
 
       getDay() {
@@ -486,7 +320,7 @@
       }
     };
 
-    app.init();
+    App.init();
   </script>
 </body>
 </html>
