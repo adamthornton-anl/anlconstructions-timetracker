@@ -2,6 +2,8 @@
 
 A **production-ready time tracking and payroll system** for Anlconstructions. Workers clock in/out, log materials, and get paid. You see everything in real-time.
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fadamthornton-anl%2Fanlconstructions-timetracker&project-name=anlconstructions-timetracker&repository-name=anlconstructions-timetracker)
+
 ---
 
 ## ✨ Features
