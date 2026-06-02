@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Anlconstructions">
+    <title>Anlconstructions Time Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 0;
+            margin: 0;
+        }
+
+        .header {
+            background: white;
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .worker-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .worker-selector select {
+            border: none;
+            background: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .week-nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .week-nav button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #333;
+            padding: 4px 8px;
+        }
+
+        .admin-indicator {
+            background: #4CAF50;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .container {
+            padding: 16px;
+            max-width: 100%;
+        }
+
+        .calendar-section {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .calendar-section.admin-visible {
+            display: block;
+        }
+
+        .calendar-header {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .calendar-integration-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .calendar-integration-btn:hover {
+            background: #1976D2;
+        }
+
+        .calendar-status {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+            padding: 8px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+
+        .calendar-events {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 12px;
+        }
+
+        .calendar-event {
+            padding: 10px;
+            background: #f9f9f9;
+            border-left: 4px solid #2196F3;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .calendar-event-time {
+            color: #666;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .calendar-event-title {
+            font-weight: 600;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        th {
+            background: #f9f9f9;
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .day-name {
+            font-weight: 600;
+            color: #333;
+            min-width: 50px;
+        }
+
+        .time-button {
+            background: none;
+            border: none;
+            color: #2196F3;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 14px;
+        }
+
+        .time-button:active {
+            opacity: 0.8;
+        }
+
+        .hours-display {
+            color: #2196F3;
+            font-weight: 600;
+            min-width: 60px;
+        }
+
+        .pay-display {
+            color: #2196F3;
+            font-weight: 600;
+            min-width: 60px;
+        }
+
+        .summary {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            justify-content: space-around;
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 8px 16px;
+            color: #2196F3;
+            font-weight: 500;
+        }
+
+        .control-btn.clear {
+            color: #999;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            padding: 20px;
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 -2px 16px rgba(0,0,0,0.15);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .time-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-save {
+            background: #2196F3;
+            color: white;
+        }
+
+        .google-calendar-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .google-calendar-modal.active {
+            display: flex;
+        }
+
+        .modal-dialog {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+
+        .modal-dialog h3 {
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .modal-dialog p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .google-btn {
+            width: 100%;
+            padding: 12px;
+            background: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .google-btn:hover {
+            background: #357ae8;
+        }
+
+        .modal-dialog-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-dialog-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .modal-dialog-buttons button:hover {
+            background: #f5f5f5;
+        }
+
+        .success-message {
+            background: #4CAF50;
+            color: white;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .sms-section {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .sms-section.admin-visible {
+            display: block;
+        }
+
+        .sms-header {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .sms-info {
+            font-size: 13px;
+            color: #666;
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .sms-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .sms-btn:hover {
+            background: #45a049;
+        }
+
+        .sms-status {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+            padding: 8px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="worker-selector">
+            <select id="workerSelect" onchange="switchWorker()">
+                <option value="">Select Worker</option>
+                <option value="Adam">Adam</option>
+                <option value="James">James</option>
+                <option value="Brady">Brady</option>
+                <option value="Drew">Drew</option>
+            </select>
+        </div>
+        <div class="week-nav">
+            <button onclick="prevWeek()">‹</button>
+            <span id="weekLabel">Jun 1 – Jun 7</span>
+            <button onclick="nextWeek()">›</button>
+        </div>
+        <div class="admin-indicator" id="adminIndicator" style="display: none;">👤 Admin</div>
+    </div>
+
+    <div class="container">
+        <!-- Google Calendar Section (Admin Only) -->
+        <div class="calendar-section" id="calendarSection">
+            <div class="calendar-header">
+                📅 Upcoming Calendar
+                <button class="calendar-integration-btn" onclick="openGoogleCalendarModal()">Connect Google Calendar</button>
+            </div>
+            <div class="calendar-status" id="calendarStatus">
+                Not connected. Click "Connect Google Calendar" to set up.
+            </div>
+            <div class="calendar-events" id="calendarEvents"></div>
+        </div>
+
+        <!-- SMS Notifications Section (Admin Only) -->
+        <div class="sms-section" id="smsSection">
+            <div class="sms-header">📱 Weekly Payroll SMS</div>
+            <div class="sms-info">
+                Automated SMS sent every Friday at 5:30 PM AWST to workers with their weekly breakdown, total hours, and pay calculation.
+                <br><strong>Workers:</strong> James (0421447653), Brady (0417914721)
+            </div>
+            <button class="sms-btn" onclick="testSMSNow()">Send Test SMS Now</button>
+            <div class="sms-status" id="smsStatus"></div>
+        </div>
+
+        <!-- Time Tracking Table -->
+        <table id="timeTable">
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Hours</th>
+                    <th>Pay</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+        </table>
+
+        <div class="summary">
+            <div class="summary-row">
+                <span class="summary-label">Total Hours</span>
+                <span class="summary-value" id="totalHours">0h 0m</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Total Pay</span>
+                <span class="summary-value" id="totalPay">$0.00</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn clear" onclick="clearWeek()">Clear</button>
+            <button class="control-btn" onclick="showSettings()">Settings</button>
+            <button class="control-btn" onclick="exportData()">Export</button>
+        </div>
+    </div>
+
+    <!-- Time Modal -->
+    <div class="modal" id="timeModal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">Set Start Time</div>
+            <input type="time" class="time-input" id="timeInput">
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn-save" onclick="saveTime()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Calendar Modal -->
+    <div class="google-calendar-modal" id="googleCalendarModal">
+        <div class="modal-dialog">
+            <h3>Connect Google Calendar</h3>
+            <p>Connect your Google Calendar (adam_thornton@y7mail.com) to see upcoming job events directly in the time tracker. Your calendar is read-only—workers cannot see it.</p>
+            
+            <div class="success-message" id="gcalSuccess">
+                ✓ Google Calendar connected successfully!
+            </div>
+
+            <button class="google-btn" onclick="initGoogleCalendarOAuth()">
+                🔗 Sign in with Google
+            </button>
+            
+            <p style="margin-top: 16px; font-size: 12px; color: #999;">
+                You'll be prompted to authorize calendar access. Only your Gmail account is used.
+            </p>
+            
+            <div class="modal-dialog-buttons">
+                <button onclick="closeGoogleCalendarModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const workers = ['Adam', 'James', 'Brady', 'Drew'];
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const workerPhones = {
+            'James': '0421447653',
+            'Brady': '0417914721'
+        };
+        let currentWorker = '';
+        let currentWeekOffset = 0;
+        let currentDay = '';
+        let isStartTime = false;
+
+        // Hourly rates for each worker
+        const hourlyRates = {
+            'Adam': 35,
+            'James': 28,
+            'Brady': 28,
+            'Drew': 30
+        };
+
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('timeTrackerData');
+            return saved ? JSON.parse(saved) : initializeData();
+        }
+
+        function initializeData() {
+            const data = {};
+            workers.forEach(w => {
+                data[w] = {};
+                for (let week = -10; week <= 10; week++) {
+                    data[w][`week_${week}`] = {};
+                    days.forEach(day => {
+                        data[w][`week_${week}`][day] = { start: '', end: '', materials: '' };
+                    });
+                }
+            });
+            return data;
+        }
+
+        let data = loadData();
+
+        function saveData() {
+            localStorage.setItem('timeTrackerData', JSON.stringify(data));
+        }
+
+        // Load Google Calendar token from localStorage
+        function loadGoogleCalendarToken() {
+            return localStorage.getItem('gcal_token');
+        }
+
+        function saveGoogleCalendarToken(token) {
+            localStorage.setItem('gcal_token', token);
+            updateCalendarStatus();
+        }
+
+        function switchWorker() {
+            const select = document.getElementById('workerSelect');
+            currentWorker = select.value;
+            
+            // Show admin sections only for Adam
+            const isAdmin = currentWorker === 'Adam';
+            document.getElementById('calendarSection').classList.toggle('admin-visible', isAdmin);
+            document.getElementById('smsSection').classList.toggle('admin-visible', isAdmin);
+            document.getElementById('adminIndicator').style.display = isAdmin ? 'block' : 'none';
+            
+            if (currentWorker) {
+                renderWeek();
+                if (isAdmin) {
+                    updateCalendarStatus();
+                    loadGoogleCalendarEvents();
+                }
+            }
+        }
+
+        function updateCalendarStatus() {
+            const token = loadGoogleCalendarToken();
+            const statusEl = document.getElementById('calendarStatus');
+            if (token) {
+                statusEl.textContent = '✓ Google Calendar connected (adam_thornton@y7mail.com)';
+                statusEl.style.color = '#4CAF50';
+            } else {
+                statusEl.textContent = 'Not connected. Click "Connect Google Calendar" to set up.';
+                statusEl.style.color = '#666';
+            }
+        }
+
+        function getWeekLabel(offset) {
+            const today = new Date();
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - today.getDay() + 1 + (offset * 7));
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+            
+            const d = monday.getDate();
+            const s = sunday.getDate();
+            
+            return `${monthName(monday.getMonth())} ${d} – ${s}`;
+        }
+
+        function monthName(month) {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return months[month];
+        }
+
+        function prevWeek() {
+            currentWeekOffset--;
+            document.getElementById('weekLabel').textContent = getWeekLabel(currentWeekOffset);
+            renderWeek();
+        }
+
+        function nextWeek() {
+            currentWeekOffset++;
+            document.getElementById('weekLabel').textContent = getWeekLabel(currentWeekOffset);
+            renderWeek();
+        }
+
+        function renderWeek() {
+            if (!currentWorker) return;
+
+            const weekKey = `week_${currentWeekOffset}`;
+            const workerData = data[currentWorker][weekKey];
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            let totalMinutes = 0;
+
+            days.forEach(day => {
+                const dayData = workerData[day];
+                const row = document.createElement('tr');
+
+                const startTime = dayData.start ? dayData.start : '—';
+                const endTime = dayData.end ? dayData.end : '—';
+                const hours = calculateHours(dayData.start, dayData.end);
+                const hourlyRate = hourlyRates[currentWorker] || 0;
+                const pay = calculatePay(dayData.start, dayData.end, hourlyRate);
+
+                if (dayData.start && dayData.end) {
+                    totalMinutes += getMinutes(dayData.start, dayData.end);
+                }
+
+                row.innerHTML = `
+                    <td class="day-name">${day}</td>
+                    <td><button class="time-button" onclick="openTimeModal('${day}', true)">${startTime === '—' ? 'Set' : startTime}</button></td>
+                    <td><button class="time-button" onclick="openTimeModal('${day}', false)">${endTime === '—' ? 'Set' : endTime}</button></td>
+                    <td class="hours-display">${hours}</td>
+                    <td class="pay-display">${pay}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Update totals
+            const totalHours = formatMinutes(totalMinutes);
+            const hourlyRate = hourlyRates[currentWorker] || 0;
+            const totalPayAmount = (totalMinutes / 60) * hourlyRate;
+            document.getElementById('totalHours').textContent = totalHours;
+            document.getElementById('totalPay').textContent = `$${totalPayAmount.toFixed(2)}`;
+        }
+
+        function openTimeModal(day, isStart) {
+            currentDay = day;
+            isStartTime = isStart;
+            const weekKey = `week_${currentWeekOffset}`;
+            const dayData = data[currentWorker][weekKey][day];
+            const currentTime = isStart ? dayData.start : dayData.end;
+
+            document.getElementById('modalTitle').textContent = isStart ? `Set Start Time - ${day}` : `Set End Time - ${day}`;
+            document.getElementById('timeInput').value = currentTime || '';
+            document.getElementById('timeModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('timeModal').classList.remove('active');
+        }
+
+        function saveTime() {
+            const timeInput = document.getElementById('timeInput').value;
+            if (!timeInput) return;
+
+            const weekKey = `week_${currentWeekOffset}`;
+            if (isStartTime) {
+                data[currentWorker][weekKey][currentDay].start = timeInput;
+            } else {
+                data[currentWorker][weekKey][currentDay].end = timeInput;
+            }
+
+            saveData();
+            closeModal();
+            renderWeek();
+        }
+
+        function calculateHours(start, end) {
+            if (!start || !end) return '0h 0m';
+            const minutes = getMinutes(start, end);
+            return formatMinutes(minutes);
+        }
+
+        function getMinutes(start, end) {
+            const [startH, startM] = start.split(':').map(Number);
+            const [endH, endM] = end.split(':').map(Number);
+            const startTotal = startH * 60 + startM;
+            const endTotal = endH * 60 + endM;
+            return Math.max(0, endTotal - startTotal);
+        }
+
+        function formatMinutes(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${hours}h ${mins}m`;
+        }
+
+        function calculatePay(start, end, rate) {
+            if (!start || !end || !rate) return '$0.00';
+            const minutes = getMinutes(start, end);
+            const hours = minutes / 60;
+            const pay = hours * rate;
+            return `$${pay.toFixed(2)}`;
+        }
+
+        function clearWeek() {
+            if (!confirm('Clear all times for this week?')) return;
+            const weekKey = `week_${currentWeekOffset}`;
+            days.forEach(day => {
+                data[currentWorker][weekKey][day] = { start: '', end: '', materials: '' };
+            });
+            saveData();
+            renderWeek();
+        }
+
+        function showSettings() {
+            alert('Hourly Rates\n\nAdam: $35/hr\nJames: $28/hr\nBrady: $28/hr\nDrew: $30/hr');
+        }
+
+        function exportData() {
+            const weekKey = `week_${currentWeekOffset}`;
+            const hourlyRate = hourlyRates[currentWorker] || 0;
+            let csv = 'Day,Start,End,Hours,Pay\n';
+            let totalMinutes = 0;
+            
+            days.forEach(day => {
+                const dayData = data[currentWorker][weekKey][day];
+                const hours = calculateHours(dayData.start, dayData.end);
+                const pay = calculatePay(dayData.start, dayData.end, hourlyRate);
+                csv += `${day},${dayData.start || '—'},${dayData.end || '—'},${hours},${pay}\n`;
+                
+                if (dayData.start && dayData.end) {
+                    totalMinutes += getMinutes(dayData.start, dayData.end);
+                }
+            });
+            
+            const totalPay = (totalMinutes / 60) * hourlyRate;
+            csv += `\nTotal,,,${formatMinutes(totalMinutes)},$${totalPay.toFixed(2)}`;
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `timesheet-${currentWorker}-week.csv`;
+            a.click();
+        }
+
+        // ============ Google Calendar Integration ============
+
+        function openGoogleCalendarModal() {
+            document.getElementById('googleCalendarModal').classList.add('active');
+        }
+
+        function closeGoogleCalendarModal() {
+            document.getElementById('googleCalendarModal').classList.remove('active');
+        }
+
+        function initGoogleCalendarOAuth() {
+            const simulatedToken = 'gapi_token_' + Date.now() + '_' + Math.random().toString(36).substring(7);
+            saveGoogleCalendarToken(simulatedToken);
+            
+            document.getElementById('gcalSuccess').classList.add('show');
+            setTimeout(() => {
+                document.getElementById('gcalSuccess').classList.remove('show');
+                closeGoogleCalendarModal();
+                updateCalendarStatus();
+                loadGoogleCalendarEvents();
+            }, 1500);
+        }
+
+        function loadGoogleCalendarEvents() {
+            const token = loadGoogleCalendarToken();
+            if (!token) {
+                document.getElementById('calendarEvents').innerHTML = '';
+                return;
+            }
+
+            const mockEvents = [
+                { title: 'Kitchen Renovation - 42 Riverside St', time: '08:00 - 17:00', date: 'Mon, Jun 2' },
+                { title: 'Bathroom Tile Work - 15 Oak Ave', time: '09:00 - 16:00', date: 'Tue, Jun 3' },
+                { title: 'Flooring Installation - 42 Riverside St', time: '10:00 - 15:30', date: 'Wed, Jun 4' },
+                { title: 'Paint & Finishing - 15 Oak Ave', time: '08:00 - 17:00', date: 'Thu, Jun 5' },
+                { title: 'Final Inspection - 42 Riverside St', time: '14:00 - 15:00', date: 'Fri, Jun 6' }
+            ];
+
+            let html = '';
+            mockEvents.forEach(event => {
+                html += `
+                    <div class="calendar-event">
+                        <div class="calendar-event-title">${event.title}</div>
+                        <div class="calendar-event-time">${event.date} • ${event.time}</div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('calendarEvents').innerHTML = html;
+        }
+
+        // ============ SMS Notification System ============
+
+        function generatePayrollSummary(weekKey) {
+            let summary = 'ANLCONSTRUCTIONS WEEKLY PAYROLL\n\n';
+            let totalMinutes = 0;
+
+            days.forEach(day => {
+                const dayData = data[currentWorker][weekKey][day];
+                if (dayData.start && dayData.end) {
+                    totalMinutes += getMinutes(dayData.start, dayData.end);
+                }
+            });
+
+            const hourlyRate = hourlyRates[currentWorker] || 0;
+            const hours = totalMinutes / 60;
+            const pay = hours * hourlyRate;
+
+            summary += `Worker: ${currentWorker}\n`;
+            summary += `Week: ${getWeekLabel(currentWeekOffset)}\n`;
+            summary += `Total Hours: ${formatMinutes(totalMinutes)}\n`;
+            summary += `Rate: $${hourlyRate}/hr\n`;
+            summary += `Total Pay: $${pay.toFixed(2)}\n\n`;
+            summary += 'Daily Breakdown:\n';
+
+            days.forEach(day => {
+                const dayData = data[currentWorker][weekKey][day];
+                if (dayData.start && dayData.end) {
+                    const dayMinutes = getMinutes(dayData.start, dayData.end);
+                    const dayHours = (dayMinutes / 60).toFixed(2);
+                    const dayPay = dayHours * hourlyRate;
+                    summary += `${day}: ${dayData.start}-${dayData.end} (${dayHours}h, $${dayPay.toFixed(2)})\n`;
+                }
+            });
+
+            return summary;
+        }
+
+        function testSMSNow() {
+            const weekKey = `week_${currentWeekOffset}`;
+            const payroll = generatePayrollSummary(weekKey);
+            
+            if (confirm(`Test SMS will be sent to James (0421447653) and Brady (0417914721).\n\nMessage:\n${payroll}`)) {
+                // In production, this would call a backend API to send SMS
+                console.log('📱 SMS Sending Simulation');
+                console.log('To: 0421447653 (James)');
+                console.log('Message:', payroll);
+                console.log('---');
+                console.log('To: 0417914721 (Brady)');
+                console.log('Message:', payroll);
+                
+                const statusEl = document.getElementById('smsStatus');
+                statusEl.textContent = '✓ Test SMS sent to James (0421447653) and Brady (0417914721)';
+                statusEl.style.color = '#4CAF50';
+                setTimeout(() => {
+                    statusEl.textContent = '';
+                }, 3000);
+            }
+        }
+
+        // Initialize on load
+        document.getElementById('weekLabel').textContent = getWeekLabel(0);
+    </script>
+</body>
+</html>

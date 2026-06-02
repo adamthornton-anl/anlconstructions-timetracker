@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Anlconstructions Time Tracker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5568d3;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding-bottom: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 24px; margin-bottom: 4px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+        .container { max-width: 600px; margin: 0 auto; padding: 0 16px; }
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+        .card h2 { font-size: 18px; margin-bottom: 16px; color: var(--text); }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: var(--text); }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; font-family: inherit; background: white; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 8px 0;
+        }
+        button:hover:not(:disabled) { background: var(--primary-dark); }
+        button:disabled { background: #cbd5e1; cursor: not-allowed; opacity: 0.6; }
+        button.success { background: var(--success); }
+        button.success:hover { background: #16a34a; }
+        button.danger { background: var(--danger); }
+        button.danger:hover { background: #dc2626; }
+        button.secondary { background: var(--text-light); }
+        button.secondary:hover { background: #475569; }
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .button-group button { margin: 0; }
+        .status { background: #f0fdf4; border: 1px solid #dcfce7; border-left: 4px solid var(--success); padding: 12px; border-radius: 8px; font-size: 14px; margin: 12px 0; color: #166534; }
+        .time-display { font-size: 32px; font-weight: 700; text-align: center; color: var(--primary); margin: 20px 0; font-family: 'Courier New', monospace; }
+        .weekly-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 16px 0; }
+        .day-cell { background: var(--bg); border: 2px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+        .day-label { font-size: 12px; font-weight: 600; margin-bottom: 4px; text-transform: uppercase; }
+        .day-time { font-size: 14px; font-weight: 500; }
+        .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+        .summary-item { background: var(--bg); padding: 12px; border-radius: 8px; text-align: center; }
+        .summary-item label { font-size: 12px; margin-bottom: 4px; }
+        .summary-item .value { font-size: 20px; font-weight: 700; color: var(--primary); }
+        .worker-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; }
+        .worker-card.selected { background: var(--primary); color: white; border-color: var(--primary); }
+        .worker-name { font-weight: 600; margin-bottom: 4px; }
+        .worker-rate { font-size: 12px; opacity: 0.8; }
+        .tab-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+        .tab-button { padding: 12px; background: var(--bg); border: 2px solid var(--border); color: var(--text-light); font-weight: 600; border-radius: 8px; cursor: pointer; }
+        .tab-button.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .hidden { display: none; }
+        .week-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .week-nav button { padding: 8px 12px; font-size: 14px; width: auto; margin: 0; }
+        .week-nav .week-label { font-weight: 600; font-size: 14px; }
+        .divider { height: 1px; background: var(--border); margin: 16px 0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⏰ Time Tracker</h1>
+        <p>Anlconstructions</p>
+    </div>
+
+    <div class="container">
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="switchTab('login')">Login</button>
+            <button class="tab-button" onclick="switchTab('tracker')">Tracker</button>
+            <button class="tab-button" onclick="switchTab('admin')">Admin</button>
+        </div>
+
+        <div id="login-tab" class="card">
+            <h2>👤 Select Worker</h2>
+            <div id="worker-list"></div>
+            <div class="form-group">
+                <label for="pin-input">PIN (Master: 1322)</label>
+                <input type="password" id="pin-input" maxlength="4" placeholder="4-digit PIN">
+            </div>
+            <button onclick="handleLogin()">Login</button>
+        </div>
+
+        <div id="tracker-tab" class="card hidden">
+            <h2 id="tracker-title">Time Tracker</h2>
+            <div id="login-status"></div>
+
+            <div class="week-nav">
+                <button onclick="previousWeek()">← Prev</button>
+                <span class="week-label" id="week-label"></span>
+                <button onclick="nextWeek()">Next →</button>
+            </div>
+
+            <div class="status" id="current-time"></div>
+
+            <div class="button-group">
+                <button class="success" onclick="checkIn()">✓ Check In</button>
+                <button class="danger" onclick="checkOut()">✗ Check Out</button>
+            </div>
+
+            <div class="form-group">
+                <label for="lunch-mins">Lunch Break (minutes)</label>
+                <select id="lunch-mins">
+                    <option value="0">None</option>
+                    <option value="30">30 min</option>
+                    <option value="40">40 min</option>
+                    <option value="45">45 min</option>
+                    <option value="60">1 hour</option>
+                </select>
+            </div>
+
+            <div class="weekly-grid" id="weekly-grid"></div>
+
+            <div class="summary">
+                <div class="summary-item">
+                    <label>Hours Worked</label>
+                    <div class="value" id="total-hours">0.0</div>
+                </div>
+                <div class="summary-item">
+                    <label>Pay This Week</label>
+                    <div class="value" id="total-pay">$0.00</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="job-input">Job/Location</label>
+                <input type="text" id="job-input" placeholder="e.g., Renovation at Smith St">
+            </div>
+
+            <div class="form-group">
+                <label for="materials-input">Materials/Supplies Needed</label>
+                <textarea id="materials-input" placeholder="List any materials you need..." style="min-height: 80px;"></textarea>
+            </div>
+
+            <button onclick="saveEntry()" class="success">💾 Save Entry</button>
+            <button onclick="logout()" class="secondary">Logout</button>
+        </div>
+
+        <div id="admin-tab" class="card hidden">
+            <h2>⚙️ Admin Panel</h2>
+            
+            <div class="form-group">
+                <label for="admin-pin">Master PIN (Default: 1322)</label>
+                <input type="password" id="admin-pin" maxlength="4" placeholder="4-digit PIN">
+            </div>
+            <button onclick="adminLogin()">Admin Login</button>
+
+            <div id="admin-content" class="hidden">
+                <div class="divider"></div>
+
+                <h3 style="margin-bottom: 12px;">Add/Edit Workers</h3>
+                <div class="form-group">
+                    <label for="new-name">Worker Name</label>
+                    <input type="text" id="new-name" placeholder="e.g., John">
+                </div>
+                <div class="form-group">
+                    <label for="new-pin">PIN</label>
+                    <input type="text" id="new-pin" maxlength="4" placeholder="4-digit PIN">
+                </div>
+                <div class="form-group">
+                    <label for="new-rate">Hourly Rate ($)</label>
+                    <input type="number" id="new-rate" step="0.01" placeholder="e.g., 50.00">
+                </div>
+                <button onclick="addWorker()" class="success">Add Worker</button>
+
+                <div class="divider"></div>
+
+                <h3 style="margin-bottom: 12px;">Workers</h3>
+                <div id="admin-worker-list"></div>
+
+                <div class="divider"></div>
+
+                <h3 style="margin-bottom: 12px;">Weekly Summary</h3>
+                <div class="week-nav" style="margin-bottom: 16px;">
+                    <button onclick="adminPreviousWeek()">← Prev</button>
+                    <span class="week-label" id="admin-week-label"></span>
+                    <button onclick="adminNextWeek()">Next →</button>
+                </div>
+                <div id="admin-summary"></div>
+
+                <button onclick="exportCSV()" class="success" style="margin-top: 12px;">📊 Export to CSV</button>
+                <button onclick="adminLogout()" class="secondary">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DATA_KEY = 'anlconstructions_timetracker';
+        const WORKERS_KEY = 'anlconstructions_workers';
+        const MASTER_PIN = '1322';
+
+        const DEFAULT_WORKERS = [
+            { id: 1, name: 'Adam', pin: '7264', hourly_rate: 81.49 },
+            { id: 2, name: 'James', pin: '5891', hourly_rate: 48.65 },
+            { id: 3, name: 'Brady', pin: '3742', hourly_rate: 29.95 },
+            { id: 4, name: 'Drew', pin: '8159', hourly_rate: 81.49 }
+        ];
+
+        let currentWorker = null;
+        let currentWeekOffset = 0;
+        let adminWeekOffset = 0;
+        let adminLoggedIn = false;
+        let timeData = {};
+
+        function init() {
+            loadWorkers();
+            loadTimeData();
+            renderWorkerList();
+            updateWeekLabel();
+            updateAdminWeekLabel();
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+        }
+
+        function getWorkers() {
+            const saved = localStorage.getItem(WORKERS_KEY);
+            return saved ? JSON.parse(saved) : DEFAULT_WORKERS;
+        }
+
+        function loadWorkers() {
+            if (!localStorage.getItem(WORKERS_KEY)) {
+                localStorage.setItem(WORKERS_KEY, JSON.stringify(DEFAULT_WORKERS));
+            }
+        }
+
+        function saveWorkers(workers) {
+            localStorage.setItem(WORKERS_KEY, JSON.stringify(workers));
+        }
+
+        function loadTimeData() {
+            const saved = localStorage.getItem(DATA_KEY);
+            timeData = saved ? JSON.parse(saved) : {};
+        }
+
+        function saveTimeData() {
+            localStorage.setItem(DATA_KEY, JSON.stringify(timeData));
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            document.getElementById(tab + '-tab').classList.remove('hidden');
+            event.target.classList.add('active');
+        }
+
+        function renderWorkerList() {
+            const workers = getWorkers();
+            const list = document.getElementById('worker-list');
+            list.innerHTML = '';
+            workers.forEach(worker => {
+                const card = document.createElement('div');
+                card.className = 'worker-card';
+                card.onclick = () => {
+                    document.querySelectorAll('.worker-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                };
+                card.innerHTML = `<div class="worker-name">${worker.name}</div><div class="worker-rate">$${worker.hourly_rate.toFixed(2)}/hr</div>`;
+                list.appendChild(card);
+            });
+        }
+
+        function handleLogin() {
+            const workers = getWorkers();
+            const selected = document.querySelector('.worker-card.selected');
+            const pin = document.getElementById('pin-input').value;
+
+            if (!selected) { alert('Select a worker'); return; }
+            const selectedWorker = workers.find(w => w.name === selected.querySelector('.worker-name').textContent);
+            if (pin !== selectedWorker.pin && pin !== MASTER_PIN) { alert('Invalid PIN'); return; }
+
+            currentWorker = selectedWorker;
+            document.getElementById('tracker-tab').classList.remove('hidden');
+            document.getElementById('login-tab').classList.add('hidden');
+            document.getElementById('tracker-title').textContent = currentWorker.name + "'s Time Tracker";
+            document.getElementById('login-status').innerHTML = '<div class="status">Logged in as <strong>' + currentWorker.name + '</strong></div>';
+            renderWeekly();
+        }
+
+        function logout() {
+            currentWorker = null;
+            currentWeekOffset = 0;
+            document.getElementById('login-tab').classList.remove('hidden');
+            document.getElementById('tracker-tab').classList.add('hidden');
+            document.getElementById('pin-input').value = '';
+            renderWorkerList();
+        }
+
+        function getToday() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return today;
+        }
+
+        function getWeekStart(offset = 0) {
+            const today = getToday();
+            const day = today.getDay();
+            const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+            const week = new Date(today.setDate(diff));
+            week.setDate(week.getDate() + (offset * 7));
+            return week;
+        }
+
+        function formatDateFull(date) {
+            return date.toLocaleDateString('en-AU', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function getDateKey(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function updateCurrentTime() {
+            const now = new Date();
+            document.getElementById('current-time').innerHTML = '<strong>' + now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + '</strong><br><small>' + now.toLocaleDateString('en-AU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + '</small>';
+        }
+
+        function updateWeekLabel() {
+            const week = getWeekStart(currentWeekOffset);
+            const weekEnd = new Date(week);
+            weekEnd.setDate(weekEnd.getDate() + 4);
+            document.getElementById('week-label').textContent = formatDateFull(week) + ' - ' + formatDateFull(weekEnd);
+        }
+
+        function updateAdminWeekLabel() {
+            const week = getWeekStart(adminWeekOffset);
+            const weekEnd = new Date(week);
+            weekEnd.setDate(weekEnd.getDate() + 4);
+            document.getElementById('admin-week-label').textContent = formatDateFull(week) + ' - ' + formatDateFull(weekEnd);
+        }
+
+        function previousWeek() { currentWeekOffset--; updateWeekLabel(); renderWeekly(); }
+        function nextWeek() { currentWeekOffset++; updateWeekLabel(); renderWeekly(); }
+        function adminPreviousWeek() { adminWeekOffset--; updateAdminWeekLabel(); renderAdminSummary(); }
+        function adminNextWeek() { adminWeekOffset++; updateAdminWeekLabel(); renderAdminSummary(); }
+
+        function checkIn() {
+            if (!currentWorker) return;
+            const today = getToday();
+            const key = currentWorker.id + '_' + getDateKey(today);
+            if (!timeData[key]) {
+                timeData[key] = { workerId: currentWorker.id, startTime: new Date(), endTime: null, lunch: 0, job: '', materials: '' };
+            } else {
+                timeData[key].startTime = new Date();
+            }
+            saveTimeData();
+            renderWeekly();
+        }
+
+        function checkOut() {
+            if (!currentWorker) return;
+            const today = getToday();
+            const key = currentWorker.id + '_' + getDateKey(today);
+            if (timeData[key]) { timeData[key].endTime = new Date(); }
+            saveTimeData();
+            renderWeekly();
+        }
+
+        function saveEntry() {
+            if (!currentWorker) return;
+            const today = getToday();
+            const key = currentWorker.id + '_' + getDateKey(today);
+            const lunch = parseInt(document.getElementById('lunch-mins').value);
+            const job = document.getElementById('job-input').value;
+            const materials = document.getElementById('materials-input').value;
+
+            if (timeData[key]) {
+                timeData[key].lunch = lunch;
+                timeData[key].job = job;
+                timeData[key].materials = materials;
+            }
+            saveTimeData();
+            alert('✅ Entry saved!');
+        }
+
+        function renderWeekly() {
+            const week = getWeekStart(currentWeekOffset);
+            const grid = document.getElementById('weekly-grid');
+            grid.innerHTML = '';
+
+            let totalHours = 0;
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+            for (let i = 0; i < 5; i++) {
+                const date = new Date(week);
+                date.setDate(date.getDate() + i);
+                const key = currentWorker.id + '_' + getDateKey(date);
+                const entry = timeData[key];
+
+                let hoursText = '—';
+                if (entry && entry.startTime && entry.endTime) {
+                    const start = new Date(entry.startTime);
+                    const end = new Date(entry.endTime);
+                    const minutes = (end - start) / 60000 - entry.lunch;
+                    const hours = minutes / 60;
+                    hoursText = hours.toFixed(1) + 'h';
+                    totalHours += Math.max(0, hours);
+                }
+
+                const cell = document.createElement('div');
+                cell.className = 'day-cell';
+                cell.innerHTML = '<div class="day-label">' + days[i] + '</div><div class="day-time">' + hoursText + '</div>';
+                grid.appendChild(cell);
+            }
+
+            document.getElementById('total-hours').textContent = totalHours.toFixed(1);
+            document.getElementById('total-pay').textContent = '$' + (totalHours * currentWorker.hourly_rate).toFixed(2);
+        }
+
+        function adminLogin() {
+            const pin = document.getElementById('admin-pin').value;
+            if (pin !== MASTER_PIN) { alert('Invalid PIN'); return; }
+            adminLoggedIn = true;
+            document.getElementById('admin-content').classList.remove('hidden');
+            renderAdminWorkerList();
+            renderAdminSummary();
+        }
+
+        function adminLogout() {
+            adminLoggedIn = false;
+            document.getElementById('admin-content').classList.add('hidden');
+            document.getElementById('admin-pin').value = '';
+        }
+
+        function addWorker() {
+            const name = document.getElementById('new-name').value.trim();
+            const pin = document.getElementById('new-pin').value.trim();
+            const rate = parseFloat(document.getElementById('new-rate').value);
+
+            if (!name || !pin || !rate) { alert('Fill all fields'); return; }
+
+            const workers = getWorkers();
+            const newId = Math.max(...workers.map(w => w.id), 0) + 1;
+            workers.push({ id: newId, name, pin, hourly_rate: rate });
+            saveWorkers(workers);
+
+            document.getElementById('new-name').value = '';
+            document.getElementById('new-pin').value = '';
+            document.getElementById('new-rate').value = '';
+
+            renderWorkerList();
+            renderAdminWorkerList();
+        }
+
+        function renderAdminWorkerList() {
+            const workers = getWorkers();
+            const list = document.getElementById('admin-worker-list');
+            list.innerHTML = '';
+
+            workers.forEach(worker => {
+                const item = document.createElement('div');
+                item.className = 'card';
+                item.style.margin = '8px 0';
+                item.innerHTML = '<div style="display: flex; justify-content: space-between; align-items: center;"><div><strong>' + worker.name + '</strong><br><small>PIN: ' + worker.pin + ' | Rate: $' + worker.hourly_rate.toFixed(2) + '/hr</small></div><button onclick="deleteWorker(' + worker.id + ')" style="width: 80px; padding: 6px; margin: 0; background: #ef4444;">Delete</button></div>';
+                list.appendChild(item);
+            });
+        }
+
+        function deleteWorker(id) {
+            if (!confirm('Delete this worker?')) return;
+            let workers = getWorkers();
+            workers = workers.filter(w => w.id !== id);
+            saveWorkers(workers);
+            renderWorkerList();
+            renderAdminWorkerList();
+        }
+
+        function renderAdminSummary() {
+            const week = getWeekStart(adminWeekOffset);
+            const workers = getWorkers();
+            const summary = document.getElementById('admin-summary');
+            summary.innerHTML = '';
+
+            workers.forEach(worker => {
+                let totalHours = 0;
+                let dayBreakdown = [];
+
+                const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+                for (let i = 0; i < 5; i++) {
+                    const date = new Date(week);
+                    date.setDate(date.getDate() + i);
+                    const key = worker.id + '_' + getDateKey(date);
+                    const entry = timeData[key];
+
+                    let hoursWorked = 0;
+                    if (entry && entry.startTime && entry.endTime) {
+                        const start = new Date(entry.startTime);
+                        const end = new Date(entry.endTime);
+                        const minutes = (end - start) / 60000 - entry.lunch;
+                        hoursWorked = Math.max(0, minutes / 60);
+                        totalHours += hoursWorked;
+                    }
+                    dayBreakdown.push(days[i] + ': ' + hoursWorked.toFixed(1) + 'h');
+                }
+
+                const totalPay = totalHours * worker.hourly_rate;
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.margin = '12px 0';
+                card.innerHTML = '<strong style="font-size: 16px;">' + worker.name + '</strong><br><small>' + dayBreakdown.join(' | ') + '</small><br><strong>Total: ' + totalHours.toFixed(1) + 'h — $' + totalPay.toFixed(2) + '</strong>';
+                summary.appendChild(card);
+            });
+        }
+
+        function exportCSV() {
+            const workers = getWorkers();
+            const week = getWeekStart(adminWeekOffset);
+            let csv = 'Worker,Mon,Tue,Wed,Thu,Fri,Total Hours,Rate,Total Pay\n';
+
+            workers.forEach(worker => {
+                let totalHours = 0;
+                let dayHours = [];
+
+                const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+                for (let i = 0; i < 5; i++) {
+                    const date = new Date(week);
+                    date.setDate(date.getDate() + i);
+                    const key = worker.id + '_' + getDateKey(date);
+                    const entry = timeData[key];
+
+                    let hoursWorked = 0;
+                    if (entry && entry.startTime && entry.endTime) {
+                        const start = new Date(entry.startTime);
+                        const end = new Date(entry.endTime);
+                        const minutes = (end - start) / 60000 - entry.lunch;
+                        hoursWorked = Math.max(0, minutes / 60);
+                        totalHours += hoursWorked;
+                    }
+                    dayHours.push(hoursWorked.toFixed(1));
+                }
+
+                const totalPay = totalHours * worker.hourly_rate;
+                csv += worker.name + ',' + dayHours.join(',') + ',' + totalHours.toFixed(1) + ',' + worker.hourly_rate.toFixed(2) + ',' + totalPay.toFixed(2) + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'timesheet_' + new Date().toISOString().split('T')[0] + '.csv';
+            a.click();
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anlconstructions Time Tracker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+        header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        header p { font-size: 1.1em; opacity: 0.9; }
+        .tabs { display: flex; background: #f5f5f5; border-bottom: 1px solid #ddd; }
+        .tab-btn { flex: 1; padding: 20px; border: none; background: none; cursor: pointer; font-size: 1em; font-weight: 500; color: #666; transition: all 0.3s; }
+        .tab-btn.active { background: white; color: #667eea; border-bottom: 3px solid #667eea; }
+        .content { padding: 30px; display: none; }
+        .content.active { display: block; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1em; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        button { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border: none; border-radius: 6px; cursor: pointer; font-size: 1em; font-weight: 600; transition: transform 0.2s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102,126,234,0.3); }
+        .btn-secondary { background: #6c757d; }
+        .btn-danger { background: #dc3545; }
+        .btn-success { background: #28a745; }
+        .table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .table th { background: #f5f5f5; padding: 15px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; }
+        .table td { padding: 15px; border-bottom: 1px solid #eee; }
+        .table tr:hover { background: #f9f9f9; }
+        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 600; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-active { background: #cfe2ff; color: #084298; }
+        .clock-display { background: #f5f5f5; padding: 30px; border-radius: 8px; text-align: center; margin: 20px 0; }
+        .clock-time { font-size: 3em; font-weight: bold; color: #667eea; font-family: 'Courier New', monospace; margin: 20px 0; }
+        .alert { padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; text-align: center; }
+        .stat-card h3 { font-size: 0.9em; opacity: 0.9; margin-bottom: 10px; }
+        .stat-card .value { font-size: 2em; font-weight: bold; }
+        .empty-state { text-align: center; padding: 40px; color: #999; }
+        .small-btn { padding: 6px 12px; font-size: 0.85em; }
+        @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⏱️ Time Tracker</h1>
+            <p>Anlconstructions - Time & Materials Management</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('time-entry')">⏰ Time Entry</button>
+            <button class="tab-btn" onclick="switchTab('workers')">👷 Workers</button>
+            <button class="tab-btn" onclick="switchTab('materials')">📦 Materials</button>
+            <button class="tab-btn" onclick="switchTab('tasks')">📋 Tasks</button>
+            <button class="tab-btn" onclick="switchTab('reports')">📊 Reports</button>
+        </div>
+
+        <!-- Time Entry Tab -->
+        <div id="time-entry" class="content active">
+            <h2>Daily Time Entry</h2>
+            <div id="time-alert"></div>
+
+            <div class="clock-display">
+                <div>Current Time</div>
+                <div class="clock-time" id="clock">00:00:00</div>
+                <div id="current-worker">Select a worker to begin</div>
+            </div>
+
+            <div class="form-group">
+                <label>Select Worker</label>
+                <select id="worker-select" onchange="loadWorkerTimeEntry()">
+                    <option value="">-- Choose a worker --</option>
+                </select>
+            </div>
+
+            <div id="time-entry-form" style="display: none;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Check-in Time</label>
+                        <input type="datetime-local" id="check-in-time">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn-success" onclick="recordCheckIn()">Check In Now</button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Lunch Start</label>
+                        <input type="datetime-local" id="lunch-start-time">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn-secondary" onclick="recordLunchStart()">Lunch Start Now</button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Lunch End</label>
+                        <input type="datetime-local" id="lunch-end-time">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn-secondary" onclick="recordLunchEnd()">Lunch End Now</button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Check-out Time</label>
+                        <input type="datetime-local" id="check-out-time">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn-danger" onclick="recordCheckOut()">Check Out Now</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="time-notes" rows="3" placeholder="Any notes about today's work..."></textarea>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Hours</h3>
+                        <div class="value" id="total-hours">0:00</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Work Hours</h3>
+                        <div class="value" id="work-hours">0:00</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Lunch Break</h3>
+                        <div class="value" id="lunch-hours">0:00</div>
+                    </div>
+                </div>
+
+                <button onclick="saveTimeEntry()">💾 Save Time Entry</button>
+            </div>
+        </div>
+
+        <!-- Workers Tab -->
+        <div id="workers" class="content">
+            <h2>Worker Management</h2>
+            <div id="workers-alert"></div>
+
+            <div class="form-group">
+                <label>Worker Name *</label>
+                <input type="text" id="worker-name" placeholder="Full name">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="worker-email">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="worker-phone">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Position</label>
+                    <input type="text" id="worker-position">
+                </div>
+                <div class="form-group">
+                    <label>Hourly Rate ($)</label>
+                    <input type="number" id="worker-rate" step="0.01">
+                </div>
+            </div>
+
+            <button onclick="saveWorker()">➕ Add Worker</button>
+
+            <table class="table" id="workers-table">
+                <thead><tr>
+                    <th>Name</th><th>Email</th><th>Phone</th><th>Position</th><th>Rate</th><th>Actions</th>
+                </tr></thead>
+                <tbody id="workers-tbody"></tbody>
+            </table>
+        </div>
+
+        <!-- Materials Tab -->
+        <div id="materials" class="content">
+            <h2>Material & Supply Requests</h2>
+            <div id="materials-alert"></div>
+
+            <div class="form-group">
+                <label>Select Worker</label>
+                <select id="materials-worker-select">
+                    <option value="">-- Choose a worker --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Description *</label>
+                <textarea id="material-description" rows="3" placeholder="What materials are needed?"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="material-quantity">
+                </div>
+                <div class="form-group">
+                    <label>Unit</label>
+                    <input type="text" id="material-unit" placeholder="bags, boxes, litres">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Priority</label>
+                <select id="material-priority">
+                    <option value="low">Low</option>
+                    <option value="normal" selected>Normal</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                </select>
+            </div>
+
+            <button onclick="saveMaterialRequest()">📦 Submit Request</button>
+
+            <table class="table" id="materials-table">
+                <thead><tr>
+                    <th>Date</th><th>Worker</th><th>Description</th><th>Priority</th><th>Status</th><th>Actions</th>
+                </tr></thead>
+                <tbody id="materials-tbody"></tbody>
+            </table>
+        </div>
+
+        <!-- Tasks Tab -->
+        <div id="tasks" class="content">
+            <h2>Daily Task List</h2>
+            <div id="tasks-alert"></div>
+
+            <div class="form-group">
+                <label>Task Title *</label>
+                <input type="text" id="task-title" placeholder="What needs to be done?">
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="task-description" rows="2"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Assign to Worker</label>
+                    <select id="task-worker-select">
+                        <option value="">-- Unassigned --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select id="task-priority">
+                        <option value="low">Low</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+            </div>
+
+            <button onclick="saveTask()">➕ Add Task</button>
+
+            <table class="table" id="tasks-table">
+                <thead><tr>
+                    <th>Date</th><th>Task</th><th>Assigned To</th><th>Priority</th><th>Status</th><th>Actions</th>
+                </tr></thead>
+                <tbody id="tasks-tbody"></tbody>
+            </table>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reports" class="content">
+            <h2>Reports & Analytics</h2>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Workers</h3>
+                    <div class="value" id="total-workers">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Time Entries</h3>
+                    <div class="value" id="total-entries">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending Requests</h3>
+                    <div class="value" id="pending-materials">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Tasks</h3>
+                    <div class="value" id="active-tasks">0</div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px;">Worker Summary</h3>
+            <table class="table" id="summary-table">
+                <thead><tr>
+                    <th>Worker</th><th>Total Entries</th><th>Total Hours</th><th>Last Entry</th>
+                </tr></thead>
+                <tbody id="summary-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Local storage based data management (for demo - will sync to Supabase)
+        const DB = {
+            workers: [],
+            timeEntries: [],
+            materialRequests: [],
+            tasks: []
+        };
+
+        // Initialize
+        function init() {
+            loadData();
+            updateClock();
+            setInterval(updateClock, 1000);
+            loadWorkers();
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const time = now.toTimeString().split(' ')[0];
+            document.getElementById('clock').textContent = time;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            if (tabName === 'reports') loadReports();
+        }
+
+        function showAlert(elementId, message, type) {
+            document.getElementById(elementId).innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        }
+
+        function loadData() {
+            const stored = localStorage.getItem('timeTrackerDB');
+            if (stored) Object.assign(DB, JSON.parse(stored));
+        }
+
+        function saveData() {
+            localStorage.setItem('timeTrackerDB', JSON.stringify(DB));
+        }
+
+        // Workers
+        function loadWorkers() {
+            updateWorkerSelects();
+            updateWorkersTable();
+        }
+
+        function updateWorkerSelects() {
+            ['worker-select', 'materials-worker-select', 'task-worker-select'].forEach(id => {
+                const select = document.getElementById(id);
+                select.innerHTML = '<option value="">-- Choose --</option>';
+                DB.workers.forEach(w => {
+                    const opt = document.createElement('option');
+                    opt.value = w.id;
+                    opt.textContent = w.name;
+                    select.appendChild(opt);
+                });
+            });
+        }
+
+        function updateWorkersTable() {
+            const tbody = document.getElementById('workers-tbody');
+            if (!DB.workers.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No workers added yet</td></tr>';
+                return;
+            }
+            tbody.innerHTML = DB.workers.map(w => `<tr>
+                <td>${w.name}</td><td>${w.email || '-'}</td><td>${w.phone || '-'}</td>
+                <td>${w.position || '-'}</td><td>$${w.hourly_rate || 0}</td>
+                <td>
+                    <button class="btn-danger small-btn" onclick="deleteWorker('${w.id}')">Delete</button>
+                </td>
+            </tr>`).join('');
+        }
+
+        function saveWorker() {
+            const name = document.getElementById('worker-name').value.trim();
+            if (!name) { showAlert('workers-alert', '❌ Name required', 'error'); return; }
+            DB.workers.push({
+                id: Date.now(),
+                name,
+                email: document.getElementById('worker-email').value,
+                phone: document.getElementById('worker-phone').value,
+                position: document.getElementById('worker-position').value,
+                hourly_rate: parseFloat(document.getElementById('worker-rate').value) || 0
+            });
+            saveData();
+            loadWorkers();
+            document.getElementById('worker-name').value = '';
+            document.getElementById('worker-email').value = '';
+            document.getElementById('worker-phone').value = '';
+            document.getElementById('worker-position').value = '';
+            document.getElementById('worker-rate').value = '';
+            showAlert('workers-alert', '✅ Worker added!', 'success');
+        }
+
+        function deleteWorker(id) {
+            DB.workers = DB.workers.filter(w => w.id != id);
+            saveData();
+            loadWorkers();
+        }
+
+        // Time Entries
+        function loadWorkerTimeEntry() {
+            const workerId = document.getElementById('worker-select').value;
+            if (!workerId) {
+                document.getElementById('time-entry-form').style.display = 'none';
+                return;
+            }
+            const worker = DB.workers.find(w => w.id == workerId);
+            document.getElementById('current-worker').textContent = `📍 ${worker.name}`;
+            document.getElementById('time-entry-form').style.display = 'block';
+        }
+
+        function recordCheckIn() { document.getElementById('check-in-time').value = getLocalDateTime(); }
+        function recordLunchStart() { document.getElementById('lunch-start-time').value = getLocalDateTime(); }
+        function recordLunchEnd() { document.getElementById('lunch-end-time').value = getLocalDateTime(); }
+        function recordCheckOut() { document.getElementById('check-out-time').value = getLocalDateTime(); }
+
+        function getLocalDateTime() {
+            const now = new Date();
+            return now.toISOString().slice(0, 16);
+        }
+
+        function saveTimeEntry() {
+            const workerId = document.getElementById('worker-select').value;
+            if (!workerId) { showAlert('time-alert', '❌ Select a worker', 'error'); return; }
+            
+            DB.timeEntries.push({
+                id: Date.now(),
+                worker_id: workerId,
+                entry_date: new Date().toISOString().split('T')[0],
+                check_in_time: document.getElementById('check-in-time').value,
+                lunch_start: document.getElementById('lunch-start-time').value,
+                lunch_end: document.getElementById('lunch-end-time').value,
+                check_out_time: document.getElementById('check-out-time').value,
+                notes: document.getElementById('time-notes').value
+            });
+            saveData();
+            showAlert('time-alert', '✅ Time entry saved!', 'success');
+        }
+
+        // Materials
+        function saveMaterialRequest() {
+            const desc = document.getElementById('material-description').value.trim();
+            if (!desc) { showAlert('materials-alert', '❌ Description required', 'error'); return; }
+            
+            DB.materialRequests.push({
+                id: Date.now(),
+                worker_id: document.getElementById('materials-worker-select').value,
+                request_date: new Date().toISOString().split('T')[0],
+                description: desc,
+                quantity: document.getElementById('material-quantity').value,
+                unit: document.getElementById('material-unit').value,
+                priority: document.getElementById('material-priority').value,
+                status: 'pending'
+            });
+            saveData();
+            document.getElementById('material-description').value = '';
+            document.getElementById('material-quantity').value = '';
+            document.getElementById('material-unit').value = '';
+            showAlert('materials-alert', '✅ Request submitted!', 'success');
+            loadMaterials();
+        }
+
+        function loadMaterials() {
+            const tbody = document.getElementById('materials-tbody');
+            if (!DB.materialRequests.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No requests yet</td></tr>';
+                return;
+            }
+            tbody.innerHTML = DB.materialRequests.map(m => {
+                const worker = DB.workers.find(w => w.id == m.worker_id);
+                return `<tr>
+                    <td>${m.request_date}</td>
+                    <td>${worker ? worker.name : 'N/A'}</td>
+                    <td>${m.description}</td>
+                    <td>${m.priority}</td>
+                    <td><span class="status-badge status-${m.status}">${m.status}</span></td>
+                    <td><button class="btn-danger small-btn" onclick="deleteMaterial('${m.id}')">Delete</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function deleteMaterial(id) {
+            DB.materialRequests = DB.materialRequests.filter(m => m.id != id);
+            saveData();
+            loadMaterials();
+        }
+
+        // Tasks
+        function saveTask() {
+            const title = document.getElementById('task-title').value.trim();
+            if (!title) { showAlert('tasks-alert', '❌ Title required', 'error'); return; }
+            
+            DB.tasks.push({
+                id: Date.now(),
+                task_date: new Date().toISOString().split('T')[0],
+                worker_id: document.getElementById('task-worker-select').value || null,
+                title,
+                description: document.getElementById('task-description').value,
+                priority: document.getElementById('task-priority').value,
+                status: 'pending'
+            });
+            saveData();
+            document.getElementById('task-title').value = '';
+            document.getElementById('task-description').value = '';
+            showAlert('tasks-alert', '✅ Task added!', 'success');
+            loadTasks();
+        }
+
+        function loadTasks() {
+            const tbody = document.getElementById('tasks-tbody');
+            if (!DB.tasks.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No tasks yet</td></tr>';
+                return;
+            }
+            tbody.innerHTML = DB.tasks.map(t => {
+                const worker = t.worker_id ? DB.workers.find(w => w.id == t.worker_id) : null;
+                return `<tr>
+                    <td>${t.task_date}</td>
+                    <td>${t.title}</td>
+                    <td>${worker ? worker.name : 'Unassigned'}</td>
+                    <td>${t.priority}</td>
+                    <td><span class="status-badge status-${t.status}">${t.status}</span></td>
+                    <td><button class="btn-danger small-btn" onclick="deleteTask('${t.id}')">Delete</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function deleteTask(id) {
+            DB.tasks = DB.tasks.filter(t => t.id != id);
+            saveData();
+            loadTasks();
+        }
+
+        // Reports
+        function loadReports() {
+            document.getElementById('total-workers').textContent = DB.workers.length;
+            document.getElementById('total-entries').textContent = DB.timeEntries.length;
+            document.getElementById('pending-materials').textContent = DB.materialRequests.filter(m => m.status === 'pending').length;
+            document.getElementById('active-tasks').textContent = DB.tasks.filter(t => t.status === 'pending').length;
+
+            const tbody = document.getElementById('summary-tbody');
+            tbody.innerHTML = DB.workers.map(w => {
+                const entries = DB.timeEntries.filter(e => e.worker_id == w.id);
+                const lastEntry = entries.length ? entries[entries.length - 1].entry_date : 'N/A';
+                return `<tr>
+                    <td>${w.name}</td>
+                    <td>${entries.length}</td>
+                    <td>${entries.length > 0 ? (entries.length * 8).toFixed(1) : '0'} hrs</td>
+                    <td>${lastEntry}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        // Load initial data
+        init();
+        loadMaterials();
+        loadTasks();
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .anl-text { font-family: Arial, sans-serif; font-weight: bold; fill: #D4845C; }
+      .anl-text-main { font-size: 48px; }
+      .anl-text-sub { font-size: 14px; letter-spacing: 3px; }
+    </style>
+  </defs>
+  
+  <!-- LOGO MARK -->
+  <g id="logo-mark" transform="translate(75, 30)">
+    <!-- Circle frame -->
+    <circle cx="50" cy="50" r="50" fill="none" stroke="#D4845C" stroke-width="2.5"/>
+    
+    <!-- Building/Structure Design -->
+    <!-- Main vertical element (pillar) -->
+    <line x1="35" y1="75" x2="35" y2="25" stroke="#D4845C" stroke-width="3" stroke-linecap="round"/>
+    <line x1="65" y1="75" x2="65" y2="25" stroke="#D4845C" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- Diagonal connections (roof/frame) -->
+    <line x1="35" y1="25" x2="50" y2="10" stroke="#C89968" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="65" y1="25" x2="50" y2="10" stroke="#C89968" stroke-width="2.5" stroke-linecap="round"/>
+    
+    <!-- Horizontal support beams -->
+    <line x1="30" y1="45" x2="70" y2="45" stroke="#D4A574" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+    <line x1="30" y1="60" x2="70" y2="60" stroke="#D4A574" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+    
+    <!-- Foundation base -->
+    <rect x="28" y="72" width="44" height="8" fill="#D4845C" rx="1"/>
+  </g>
+  
+  <!-- COMPANY NAME -->
+  <text x="150" y="140" class="anl-text anl-text-main" text-anchor="middle">ANL</text>
+  <text x="150" y="170" class="anl-text anl-text-sub" text-anchor="middle">CONSTRUCTIONS</text>
+  
+  <!-- Optional tagline -->
+  <text x="150" y="290" style="font-family: Arial, sans-serif; font-size: 11px; fill: #999; text-anchor: middle; letter-spacing: 1px;">Building Excellence</text>
+</svg>

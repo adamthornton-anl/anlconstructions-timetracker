@@ -1,0 +1,27 @@
+{
+  "name": "anlconstructions-timetracker",
+  "version": "1.0.0",
+  "description": "Time tracking and payroll system for Anlconstructions",
+  "main": "app-backend.js",
+  "scripts": {
+    "start": "node app-backend.js",
+    "dev": "nodemon app-backend.js",
+    "install-deps": "npm install express cors dotenv @supabase/supabase-js"
+  },
+  "keywords": [
+    "timetracker",
+    "payroll",
+    "construction"
+  ],
+  "author": "Nicole",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.106.2",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

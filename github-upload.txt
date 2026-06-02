@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Anlconstructions">
+    <title>Anlconstructions Time Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding-bottom: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .worker-select {
+            margin-bottom: 20px;
+        }
+
+        .worker-select label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .worker-select select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .time-display {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .time-display .label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .time-display .time {
+            font-size: 48px;
+            font-weight: bold;
+            color: #FF6B35;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        button {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-checkin {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-checkin:active {
+            background: #45a049;
+            transform: scale(0.98);
+        }
+
+        .btn-checkout {
+            background: #FF6B35;
+            color: white;
+        }
+
+        .btn-checkout:active {
+            background: #E5571E;
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        .btn-secondary:active {
+            background: #d0d0d0;
+            transform: scale(0.98);
+        }
+
+        .status {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 600;
+        }
+
+        .status.checked-in {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .status.checked-out {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        .notes-section {
+            margin-top: 20px;
+        }
+
+        .notes-section h3 {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .materials-list {
+            background: #FFF9E6;
+            border-left: 4px solid #FF6B35;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+
+        .materials-list h4 {
+            color: #FF6B35;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .materials-list ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .materials-list li {
+            padding: 6px 0;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .materials-list li:before {
+            content: "✓ ";
+            color: #FF6B35;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .empty-materials {
+            color: #999;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        .daily-summary {
+            margin-top: 30px;
+        }
+
+        .daily-summary h3 {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .worker-entry {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #FF6B35;
+        }
+
+        .worker-entry .name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .worker-entry .hours {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .worker-entry .location {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .admin-view {
+            display: none;
+        }
+
+        .admin-view.active {
+            display: block;
+        }
+
+        .view-toggle {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .toggle-btn {
+            background: #333;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .toggle-btn:active {
+            background: #555;
+        }
+
+        .location-badge {
+            display: inline-block;
+            background: #E3F2FD;
+            color: #1976D2;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .time-display .time {
+                font-size: 40px;
+            }
+
+            button {
+                padding: 14px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⏱️ Time Tracker</h1>
+        <p>Anlconstructions</p>
+    </div>
+
+    <div class="container">
+        <div class="view-toggle" id="adminToggle" style="display: none; margin-bottom: 20px;">
+            <button class="toggle-btn" onclick="toggleView()">📊 Admin Dashboard</button>
+        </div>
+
+        <!-- WORKER VIEW -->
+        <div id="workerView">
+            <div class="card">
+                <div class="worker-select">
+                    <label for="workerSelect">Select Your Name:</label>
+                    <select id="workerSelect" onchange="switchWorker()">
+                        <option value="">-- Choose --</option>
+                        <option value="Adam">Adam</option>
+                        <option value="Worker 1">Worker 1</option>
+                        <option value="Worker 2">Worker 2</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card" id="timerCard" style="display: none;">
+                <div class="time-display">
+                    <div class="label">Current Time</div>
+                    <div class="time" id="currentTime">00:00:00</div>
+                </div>
+
+                <div id="statusDisplay" class="status checked-out" style="display: none;">
+                    <span id="statusText">Ready to check in</span>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-checkin" id="checkinBtn" onclick="checkIn()">Check In</button>
+                    <button class="btn-checkout" id="checkoutBtn" onclick="checkOut()" style="display: none;">Check Out</button>
+                </div>
+
+                <div class="notes-section">
+                    <h3>Materials / Notes</h3>
+                    <textarea id="notesInput" placeholder="Type materials needed, supplies, or notes...&#10;e.g., 20 bags cement, 5 sheets plasterboard, paint supplies"></textarea>
+                    <button class="btn-secondary" onclick="saveMaterials()" style="width: 100%; margin-top: 10px;">Save Materials</button>
+                </div>
+
+                <div id="materialsDisplay"></div>
+            </div>
+        </div>
+
+        <!-- ADMIN VIEW -->
+        <div id="adminView" class="admin-view">
+            <div class="card">
+                <button class="toggle-btn" onclick="toggleView()" style="width: 100%; margin-bottom: 15px;">← Back to Worker</button>
+                
+                <h2 style="margin-bottom: 20px; font-size: 20px;">Daily Summary</h2>
+
+                <div class="daily-summary">
+                    <h3>Hours Worked (30 min lunch deducted)</h3>
+                    <div id="summaryWorkers"></div>
+                </div>
+
+                <div class="daily-summary" style="margin-top: 30px;">
+                    <h3>All Materials Needed</h3>
+                    <div id="allMaterials"></div>
+                </div>
+
+                <button class="btn-secondary" onclick="resetDay()" style="width: 100%; margin-top: 20px; background: #ffcccc;">Reset Daily Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize data structure
+        const workers = ['Adam', 'Worker 1', 'Worker 2'];
+        let currentWorker = '';
+
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('timeTrackerData');
+            return saved ? JSON.parse(saved) : initializeData();
+        }
+
+        function initializeData() {
+            const data = {};
+            workers.forEach(w => {
+                data[w] = {
+                    checkinTime: null,
+                    checkoutTime: null,
+                    location: null,
+                    materials: []
+                };
+            });
+            return data;
+        }
+
+        let data = loadData();
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('timeTrackerData', JSON.stringify(data));
+        }
+
+        // Detect if admin (optional - show toggle if on first load)
+        function detectAdmin() {
+            const adminToggle = document.getElementById('adminToggle');
+            // Show admin toggle for all users - they can click to see summary
+            adminToggle.style.display = 'block';
+        }
+
+        function switchWorker() {
+            const select = document.getElementById('workerSelect');
+            currentWorker = select.value;
+
+            if (!currentWorker) {
+                document.getElementById('timerCard').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('timerCard').style.display = 'block';
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            if (!currentWorker) return;
+
+            const workerData = data[currentWorker];
+            const checkinBtn = document.getElementById('checkinBtn');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            const statusDisplay = document.getElementById('statusDisplay');
+            const statusText = document.getElementById('statusText');
+            const notesInput = document.getElementById('notesInput');
+
+            if (workerData.checkinTime && !workerData.checkoutTime) {
+                // Checked in
+                checkinBtn.style.display = 'none';
+                checkoutBtn.style.display = 'flex';
+                statusDisplay.style.display = 'block';
+                statusDisplay.className = 'status checked-in';
+                statusText.textContent = `✓ Checked in at ${new Date(workerData.checkinTime).toLocaleTimeString()}`;
+                notesInput.disabled = false;
+            } else if (workerData.checkoutTime) {
+                // Checked out
+                checkinBtn.style.display = 'flex';
+                checkoutBtn.style.display = 'none';
+                statusDisplay.style.display = 'block';
+                statusDisplay.className = 'status checked-out';
+                const hoursWorked = calculateHours(workerData.checkinTime, workerData.checkoutTime);
+                statusText.textContent = `✓ Checked out • ${hoursWorked} hours worked`;
+                notesInput.disabled = false;
+            } else {
+                // Not checked in
+                checkinBtn.style.display = 'flex';
+                checkoutBtn.style.display = 'none';
+                statusDisplay.style.display = 'none';
+                notesInput.disabled = true;
+            }
+
+            updateMaterialsDisplay();
+        }
+
+        function checkIn() {
+            if (!currentWorker) return;
+
+            const now = new Date();
+            data[currentWorker].checkinTime = now.toISOString();
+            data[currentWorker].checkoutTime = null;
+            data[currentWorker].location = null;
+            saveData();
+            updateDisplay();
+        }
+
+        function checkOut() {
+            if (!currentWorker) return;
+
+            // Request GPS location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const now = new Date();
+                        data[currentWorker].checkoutTime = now.toISOString();
+                        data[currentWorker].location = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            accuracy: position.coords.accuracy
+                        };
+                        saveData();
+                        updateDisplay();
+                        alert('✓ Checked out with location recorded');
+                    },
+                    (error) => {
+                        // Proceed without location
+                        const now = new Date();
+                        data[currentWorker].checkoutTime = now.toISOString();
+                        saveData();
+                        updateDisplay();
+                        alert('✓ Checked out (location unavailable)');
+                    }
+                );
+            } else {
+                // No geolocation support
+                const now = new Date();
+                data[currentWorker].checkoutTime = now.toISOString();
+                saveData();
+                updateDisplay();
+            }
+        }
+
+        function calculateHours(checkin, checkout) {
+            const start = new Date(checkin);
+            const end = new Date(checkout);
+            let minutes = (end - start) / 60000;
+            
+            // Deduct 30 minutes for lunch
+            minutes = Math.max(0, minutes - 30);
+            
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            
+            return `${hours}h ${Math.round(mins)}m`;
+        }
+
+        function saveMaterials() {
+            if (!currentWorker) return;
+
+            const notesText = document.getElementById('notesInput').value;
+            if (!notesText.trim()) return;
+
+            // Simple parsing: split by commas and clean up
+            const items = notesText
+                .split(/[,\n]/)
+                .map(item => item.trim())
+                .filter(item => item.length > 0);
+
+            data[currentWorker].materials = items;
+            saveData();
+            updateMaterialsDisplay();
+            alert('✓ Materials saved');
+        }
+
+        function updateMaterialsDisplay() {
+            const materialsDiv = document.getElementById('materialsDisplay');
+            const workerData = data[currentWorker];
+
+            if (!workerData.materials || workerData.materials.length === 0) {
+                materialsDiv.innerHTML = '';
+                return;
+            }
+
+            let html = '<div class="materials-list"><h4>Materials to Get:</h4><ul>';
+            workerData.materials.forEach(item => {
+                html += `<li>${item}</li>`;
+            });
+            html += '</ul></div>';
+
+            materialsDiv.innerHTML = html;
+        }
+
+        function toggleView() {
+            const workerView = document.getElementById('workerView');
+            const adminView = document.getElementById('adminView');
+
+            if (adminView.classList.contains('active')) {
+                adminView.classList.remove('active');
+                workerView.style.display = 'block';
+            } else {
+                adminView.classList.add('active');
+                workerView.style.display = 'none';
+                updateAdminDashboard();
+            }
+        }
+
+        function updateAdminDashboard() {
+            let summaryHtml = '';
+            let allMaterials = {};
+
+            workers.forEach(worker => {
+                const wd = data[worker];
+                if (wd.checkinTime) {
+                    const hoursText = wd.checkoutTime 
+                        ? calculateHours(wd.checkinTime, wd.checkoutTime)
+                        : 'Still clocked in';
+
+                    let locationHtml = '';
+                    if (wd.location) {
+                        locationHtml = `<div class="location-badge">📍 ${wd.location.lat.toFixed(4)}, ${wd.location.lng.toFixed(4)}</div>`;
+                    }
+
+                    summaryHtml += `
+                        <div class="worker-entry">
+                            <div class="name">${worker}</div>
+                            <div class="hours">${hoursText}</div>
+                            ${locationHtml}
+                        </div>
+                    `;
+                }
+
+                // Collect materials
+                if (wd.materials && wd.materials.length > 0) {
+                    wd.materials.forEach(item => {
+                        if (!allMaterials[item]) {
+                            allMaterials[item] = 0;
+                        }
+                        allMaterials[item]++;
+                    });
+                }
+            });
+
+            document.getElementById('summaryWorkers').innerHTML = summaryHtml || '<p style="color: #999;">No one checked in yet</p>';
+
+            let materialsHtml = '';
+            const uniqueMaterials = Object.keys(allMaterials);
+            if (uniqueMaterials.length > 0) {
+                materialsHtml = '<div class="materials-list" style="border-left-color: #2196F3;"><ul>';
+                uniqueMaterials.forEach(item => {
+                    materialsHtml += `<li>${item}</li>`;
+                });
+                materialsHtml += '</ul></div>';
+            } else {
+                materialsHtml = '<p class="empty-materials">No materials logged yet</p>';
+            }
+
+            document.getElementById('allMaterials').innerHTML = materialsHtml;
+        }
+
+        function resetDay() {
+            if (confirm('Reset all data for today? This cannot be undone.')) {
+                data = initializeData();
+                saveData();
+                location.reload();
+            }
+        }
+
+        // Update clock every second
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = 
+                now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Initialize
+        detectAdmin();
+    </script>
+</body>
+</html>

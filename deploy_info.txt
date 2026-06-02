@@ -1,0 +1,12 @@
+DEPLOYMENT READY
+
+Your app is ready to deploy!
+
+Option 1: Visit https://app.netlify.com/drop and drag index.html onto it
+Option 2: Share this file directly
+
+File location: /home/agent/workspace/index.html
+File size: 19.8 KB
+Status: Ready for deployment
+
+Next: Go to Netlify Drop and upload the file to get your live URL

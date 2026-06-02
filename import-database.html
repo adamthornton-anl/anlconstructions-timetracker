@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anlconstructions Database Setup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 24px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 32px;
+            font-size: 16px;
+        }
+        .status {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+        button {
+            width: 100%;
+            padding: 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-bottom: 12px;
+        }
+        button:hover:not(:disabled) {
+            background: #5568d3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .success {
+            color: #22c55e;
+        }
+        .error {
+            color: #ef4444;
+        }
+        .loading {
+            color: #667eea;
+        }
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1e40af;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗄️ Database Setup</h1>
+        <p class="subtitle">Anlconstructions Time Tracker</p>
+        
+        <div class="status" id="status">Ready to import your database schema and user data...\n\nClick "Import Database" to begin.</div>
+        
+        <button onclick="importDatabase()" id="importBtn">Import Database</button>
+        <button onclick="location.reload()" id="resetBtn" style="display: none; background: #666;">Reset</button>
+        
+        <div class="info-box">
+            ℹ️ This will create two tables (users & time_entries) and add 4 workers: Adam, James, Brady, and Drew.
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://tzwsdqbrtohcxzvdfwdw.supabase.co';
+        const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6d3NkcWJydG9oY3h6dmRmd2R3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDM2MTM5MywiZXhwIjoyMDk1OTM3MzkzfQ.V3rubtd9DueYO0XzwlkJ-NYGhzi_rHIFxd9WqIHx8Ns';
+        const PUBLISHABLE_KEY = 'sb_publishable_frfpPpx6hXMGRdsJrDlW_A_9WTKqN1l';
+
+        function log(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+            statusEl.innerHTML += `\n${prefix} [${timestamp}] ${message}`;
+            statusEl.scrollTop = statusEl.scrollHeight;
+        }
+
+        async function importDatabase() {
+            const btn = document.getElementById('importBtn');
+            btn.disabled = true;
+            
+            document.getElementById('status').innerHTML = '';
+            log('Starting database import...');
+
+            try {
+                // Import Supabase client
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+                document.head.appendChild(script);
+
+                script.onload = async () => {
+                    const { createClient } = window.supabase;
+                    const supabase = createClient(API_URL, SERVICE_ROLE_KEY);
+
+                    log('Connected to Supabase');
+
+                    try {
+                        // Create users table
+                        log('Creating users table...');
+                        await supabase.rpc('exec_sql', {
+                            sql: `CREATE TABLE IF NOT EXISTS users (
+                                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                                name TEXT NOT NULL UNIQUE,
+                                pin TEXT NOT NULL,
+                                hourly_rate DECIMAL(10,2) NOT NULL,
+                                full_name TEXT,
+                                tfn TEXT,
+                                super_deduction DECIMAL(10,2) DEFAULT 323.04,
+                                tax_deduction DECIMAL(10,2) DEFAULT 692.00,
+                                created_at TIMESTAMP DEFAULT NOW()
+                            );`
+                        });
+                        log('Users table created', 'success');
+
+                        // Create time_entries table
+                        log('Creating time_entries table...');
+                        await supabase.rpc('exec_sql', {
+                            sql: `CREATE TABLE IF NOT EXISTS time_entries (
+                                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                                user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                                day TEXT NOT NULL,
+                                week_offset INT DEFAULT 0,
+                                start_time TEXT,
+                                end_time TEXT,
+                                lunch_mins INT DEFAULT 0,
+                                job TEXT,
+                                notes TEXT,
+                                materials TEXT,
+                                created_at TIMESTAMP DEFAULT NOW(),
+                                updated_at TIMESTAMP DEFAULT NOW()
+                            );`
+                        });
+                        log('Time entries table created', 'success');
+
+                        // Create index
+                        log('Creating index...');
+                        await supabase.rpc('exec_sql', {
+                            sql: `CREATE INDEX IF NOT EXISTS idx_time_entries_user_week ON time_entries(user_id, week_offset, day);`
+                        });
+                        log('Index created', 'success');
+
+                        // Insert users
+                        log('Inserting user data...');
+                        const { error } = await supabase.from('users').insert([
+                            { name: 'Adam', pin: '7264', hourly_rate: 81.49, full_name: 'Adam Conan Thornton', tfn: '394 424 934', super_deduction: 323.04, tax_deduction: 692.00 },
+                            { name: 'James', pin: '5891', hourly_rate: 48.65, full_name: 'James', tfn: '', super_deduction: 216.00, tax_deduction: 400.00 },
+                            { name: 'Brady', pin: '3742', hourly_rate: 29.95, full_name: 'Brady', tfn: '', super_deduction: 132.96, tax_deduction: 178.00 },
+                            { name: 'Drew', pin: '8159', hourly_rate: 81.49, full_name: 'Drew', tfn: '', super_deduction: 323.04, tax_deduction: 692.00 }
+                        ]);
+
+                        if (error) {
+                            log(`User insert error: ${error.message}`, 'error');
+                        } else {
+                            log('4 workers added (Adam, James, Brady, Drew)', 'success');
+                        }
+
+                        log('✨ Database setup complete!', 'success');
+                        document.getElementById('resetBtn').style.display = 'block';
+
+                    } catch (err) {
+                        log(`Error: ${err.message}`, 'error');
+                        btn.disabled = false;
+                    }
+                };
+
+                script.onerror = () => {
+                    log('Failed to load Supabase library', 'error');
+                    btn.disabled = false;
+                };
+
+            } catch (err) {
+                log(`Error: ${err.message}`, 'error');
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

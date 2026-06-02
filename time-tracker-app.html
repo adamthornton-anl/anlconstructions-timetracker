@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANL Constructions Time Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: url('https://adamthornton-anl.github.io/anlconstructions-timetracker/anl-logo.jpg') center/cover fixed;
+            min-height: 100vh;
+            padding: 10px;
+            color: #333;
+        }
+        
+        .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #D4845C 0%, #C86B4B 100%); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
+        .logo { width: 160px; margin: 0 auto 20px; border-radius: 8px; }
+        .subtitle { font-size: 14px; color: #666; margin-bottom: 20px; }
+        .worker-btn { width: 100%; padding: 14px; margin-bottom: 10px; border: 2px solid #D4845C; background: white; color: #D4845C; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .worker-btn:hover { background: #D4845C; color: white; }
+        .pin-input { width: 100%; padding: 12px; font-size: 18px; letter-spacing: 8px; text-align: center; border: 2px solid #D4845C; border-radius: 6px; margin-bottom: 15px; }
+        
+        .app-screen { display: none; }
+        .app-screen.active { display: block; background: rgba(255,255,255,0.96); border-radius: 12px; padding: 15px; margin: 0 auto 20px; max-width: 1000px; }
+        
+        .header { background: white; padding: 14px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 3px solid #D4845C; }
+        .header-logo { height: 45px; border-radius: 4px; }
+        .worker-info { display: flex; align-items: center; gap: 10px; font-weight: 600; flex: 1; }
+        .week-nav { display: flex; gap: 10px; align-items: center; }
+        .week-nav button { background: none; border: none; font-size: 20px; cursor: pointer; color: #D4845C; font-weight: bold; }
+        .week-text { font-weight: 600; min-width: 150px; text-align: center; }
+        .logout-btn { background: #D4845C; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        
+        table { width: 100%; background: white; border-collapse: collapse; border-radius: 8px; margin: 15px 0; }
+        th, td { padding: 11px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
+        th { background: #f9f9f9; font-weight: 600; color: #666; }
+        .set-btn { background: none; border: none; color: #D4845C; font-weight: 600; cursor: pointer; padding: 4px 8px; }
+        .set-btn:hover { text-decoration: underline; }
+        .hours-col { color: #D4845C; font-weight: 600; }
+        .pay-col { color: #D4845C; font-weight: 600; }
+        
+        .summary { background: white; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .summary-row:last-child { border-bottom: none; }
+        .summary-label { font-weight: 600; }
+        .summary-value { font-weight: 600; color: #D4845C; }
+        
+        .buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
+        .btn { background: white; border: 1px solid #ddd; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; }
+        .btn-primary { background: #D4845C; color: white; border: none; }
+        .btn-primary:hover { background: #C86B4B; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: flex-end; justify-content: center; }
+        .modal.show { display: flex; }
+        .modal-box { background: white; width: 100%; padding: 20px; border-radius: 12px 12px 0 0; max-height: 80vh; overflow-y: auto; }
+        .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; }
+        .modal-input { width: 100%; padding: 11px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; margin-bottom: 10px; font-family: inherit; }
+        .lunch-options { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+        .lunch-btn { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-weight: 500; }
+        .lunch-btn.active { border: 2px solid #D4845C; background: #FFF3E0; font-weight: 600; }
+        .modal-btns { display: flex; gap: 10px; }
+        .modal-btns button { flex: 1; padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        .btn-cancel { background: #f0f0f0; color: #333; }
+        .btn-save { background: #D4845C; color: white; }
+        .loading { color: #D4845C; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <!-- LOGIN -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-box">
+            <img src="https://adamthornton-anl.github.io/anlconstructions-timetracker/anl-logo.jpg" alt="ANL" class="logo">
+            <div class="subtitle" id="loginMsg">Select Your Name</div>
+            
+            <div id="nameSelect">
+                <button class="worker-btn" onclick="app.selectWorker('Adam')">Adam</button>
+                <button class="worker-btn" onclick="app.selectWorker('James')">James</button>
+                <button class="worker-btn" onclick="app.selectWorker('Brady')">Brady</button>
+                <button class="worker-btn" onclick="app.selectWorker('Drew')">Drew</button>
+            </div>
+            
+            <div id="pinScreen" style="display:none;">
+                <input type="password" id="pinField" class="pin-input" maxlength="4" placeholder="****">
+                <button class="worker-btn" onclick="app.checkPin()" style="background:#D4845C;color:white;border:none;">Login</button>
+                <button class="worker-btn" onclick="app.backToSelect()" style="background:#f0f0f0;border:none;margin-top:10px;">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP -->
+    <div class="app-screen" id="appScreen">
+        <div class="header">
+            <div class="worker-info">
+                <img src="https://adamthornton-anl.github.io/anlconstructions-timetracker/anl-logo.jpg" alt="ANL" class="header-logo">
+                <span id="workerName">Adam</span>
+            </div>
+            <div class="week-nav">
+                <button onclick="app.prevWeek()">‹</button>
+                <span class="week-text" id="weekLabel">Mon 1 - Fri 5</span>
+                <button onclick="app.nextWeek()">›</button>
+            </div>
+            <button class="logout-btn" onclick="app.logout()">Logout</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>Start</th>
+                    <th>Lunch</th>
+                    <th>End</th>
+                    <th>Hours</th>
+                    <th>Pay</th>
+                    <th>Job</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+
+        <div class="summary">
+            <div class="summary-row">
+                <span class="summary-label">Total Hours</span>
+                <span class="summary-value" id="totalHours">0h 0m</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Total Pay</span>
+                <span class="summary-value" id="totalPay">$0.00</span>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn" onclick="app.clearWeek()">Clear Week</button>
+            <button class="btn" onclick="app.exportCSV()">📋 Export CSV</button>
+            <button class="btn btn-primary" onclick="app.downloadPayslipHtml()">📄 Payslip HTML</button>
+            <button class="btn btn-primary" onclick="app.downloadPayslipCsv()">📊 Payslip CSV</button>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal" id="modal">
+        <div class="modal-box">
+            <div class="modal-title" id="modalTitle">Edit</div>
+            <input type="time" class="modal-input" id="timeInput" style="display:none;">
+            <input type="text" class="modal-input" id="jobInput" placeholder="Job/Client" style="display:none;">
+            <textarea class="modal-input" id="notesInput" placeholder="Notes..." style="display:none;min-height:70px;resize:vertical;"></textarea>
+            <textarea class="modal-input" id="materialsInput" placeholder="Materials..." style="display:none;min-height:70px;resize:vertical;"></textarea>
+            <div id="lunchSelector" style="display:none;"></div>
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="app.closeModal()">Cancel</button>
+                <button class="btn-save" onclick="app.saveModal()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const SUPABASE_URL = 'https://tzwsdqbrtohcxzvdfwdw.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_frfpPpx6hXMGRdsJrDlW_A_9WTKqN1l';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const app = {
+            WORKERS: ['Adam', 'James', 'Brady', 'Drew'],
+            DAYS: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+            RATES: { 'Adam': 81.49, 'James': 48.65, 'Brady': 29.95, 'Drew': 81.49 },
+            PINS: { 'Adam': '7264', 'James': '5891', 'Brady': '3742', 'Drew': '8159' },
+            MASTER_PIN: '1322',
+            DEDUCTIONS: {
+                'Adam': { super: 323.04, tax: 692.00 },
+                'James': { super: 216.00, tax: 400.00 },
+                'Brady': { super: 132.96, tax: 178.00 },
+                'Drew': { super: 323.04, tax: 692.00 }
+            },
+            FULLNAMES: { 'Adam': 'Adam Conan Thornton', 'James': 'James', 'Brady': 'Brady', 'Drew': 'Drew' },
+            TFN: { 'Adam': '394 424 934', 'James': '', 'Brady': '', 'Drew': '' },
+            ABN: '61 957 816 341',
+            ADAM_TELEGRAM: '8855418763',
+
+            worker: '',
+            workerId: '',
+            week: 0,
+            editDay: '',
+            editField: '',
+            entries: {},
+
+            async init() {
+                console.log('App initialized');
+                const saved = localStorage.getItem('anlWorker');
+                if (saved && this.WORKERS.includes(saved)) {
+                    this.worker = saved;
+                    await this.loadWorkerData();
+                    this.showApp();
+                }
+            },
+
+            selectWorker(name) {
+                this.worker = name;
+                document.getElementById('loginMsg').textContent = `Enter PIN for ${name}`;
+                document.getElementById('nameSelect').style.display = 'none';
+                document.getElementById('pinScreen').style.display = 'block';
+                document.getElementById('pinField').value = '';
+                document.getElementById('pinField').focus();
+            },
+
+            checkPin() {
+                const pin = document.getElementById('pinField').value;
+                if (pin === this.PINS[this.worker] || pin === this.MASTER_PIN) {
+                    this.loginSuccess();
+                } else {
+                    alert('Wrong PIN');
+                    document.getElementById('pinField').value = '';
+                    document.getElementById('pinField').focus();
+                }
+            },
+
+            backToSelect() {
+                this.worker = '';
+                document.getElementById('loginMsg').textContent = 'Select Your Name';
+                document.getElementById('nameSelect').style.display = 'block';
+                document.getElementById('pinScreen').style.display = 'none';
+            },
+
+            async loginSuccess() {
+                localStorage.setItem('anlWorker', this.worker);
+                await this.loadWorkerData();
+                this.showApp();
+                this.sendTelegramAlert(`${this.worker} has logged into ANL Time Tracker`);
+            },
+
+            async loadWorkerData() {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('id')
+                    .eq('name', this.worker)
+                    .single();
+                
+                if (data) {
+                    this.workerId = data.id;
+                    await this.loadEntries();
+                } else {
+                    console.error('Worker not found');
+                }
+            },
+
+            async loadEntries() {
+                const { data, error } = await supabase
+                    .from('time_entries')
+                    .select('*')
+                    .eq('user_id', this.workerId)
+                    .eq('week_offset', this.week);
+                
+                if (data) {
+                    this.entries = {};
+                    data.forEach(entry => {
+                        this.entries[entry.day] = {
+                            start: entry.start_time || '',
+                            lunch: entry.lunch_mins || 0,
+                            end: entry.end_time || '',
+                            job: entry.job || '',
+                            notes: entry.notes || '',
+                            materials: entry.materials || ''
+                        };
+                    });
+                }
+                this.renderTable();
+            },
+
+            showApp() {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appScreen').classList.add('active');
+                document.getElementById('workerName').textContent = this.worker;
+                this.week = 0;
+                this.updateWeekLabel();
+                this.renderTable();
+            },
+
+            sendTelegramAlert(msg) {
+                const fullMsg = `🔔 ${msg}`;
+                fetch('https://agents.manyhandz.ai/api/send-message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'send', target: this.ADAM_TELEGRAM, message: fullMsg })
+                }).catch(() => console.log('Alert sent'));
+            },
+
+            logout() {
+                this.worker = '';
+                this.workerId = '';
+                localStorage.removeItem('anlWorker');
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('appScreen').classList.remove('active');
+                this.backToSelect();
+            },
+
+            calcMins(start, end) {
+                if (!start || !end) return 0;
+                const [sh, sm] = start.split(':').map(Number);
+                const [eh, em] = end.split(':').map(Number);
+                return (eh * 60 + em) - (sh * 60 + sm);
+            },
+
+            formatMins(m) {
+                if (m <= 0) return '0h 0m';
+                const h = Math.floor(m / 60);
+                const r = m % 60;
+                return `${h}h ${r}m`;
+            },
+
+            getNow() {
+                const d = new Date();
+                return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+            },
+
+            getWeekDates() {
+                const today = new Date();
+                const offset = this.week * 7;
+                const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset);
+                const mon = new Date(d);
+                mon.setDate(d.getDate() - d.getDay() + 1);
+                const fri = new Date(mon);
+                fri.setDate(mon.getDate() + 4);
+                return {
+                    monDate: mon.toLocaleDateString('en-AU'),
+                    friDate: fri.toLocaleDateString('en-AU'),
+                    monDay: mon.getDate(),
+                    friDay: fri.getDate(),
+                    month: mon.toLocaleDateString('en-AU', { month: 'short' })
+                };
+            },
+
+            renderTable() {
+                const tbody = document.getElementById('tbody');
+                tbody.innerHTML = '';
+                const rate = this.RATES[this.worker];
+                let total = 0;
+
+                this.DAYS.forEach(day => {
+                    const entry = this.entries[day] || { start: '', lunch: 0, end: '', job: '', notes: '', materials: '' };
+                    const st = entry.start || 'Set';
+                    const lt = entry.lunch > 0 ? `${entry.lunch}m` : 'Set';
+                    const en = entry.end || 'Set';
+                    const jb = entry.job || '—';
+                    const nt = (entry.notes || entry.materials) ? '✏️' : '📝';
+
+                    let m = this.calcMins(entry.start, entry.end);
+                    if (entry.lunch > 0) m = Math.max(0, m - entry.lunch);
+                    const h = this.formatMins(m);
+                    const p = (m / 60 * rate).toFixed(2);
+                    if (entry.start && entry.end) total += m;
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${day}</td>
+                        <td><button class="set-btn" onclick="app.editField('${day}', 'start')">${st}</button></td>
+                        <td><button class="set-btn" onclick="app.editField('${day}', 'lunch')">${lt}</button></td>
+                        <td><button class="set-btn" onclick="app.editField('${day}', 'end')">${en}</button></td>
+                        <td class="hours-col">${h}</td>
+                        <td class="pay-col">$${p}</td>
+                        <td><button class="set-btn" onclick="app.editField('${day}', 'job')">${jb}</button></td>
+                        <td><button class="set-btn" onclick="app.editField('${day}', 'notes')">${nt}</button></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                document.getElementById('totalHours').textContent = this.formatMins(total);
+                document.getElementById('totalPay').textContent = `$${(total / 60 * rate).toFixed(2)}`;
+            },
+
+            editField(day, field) {
+                this.editDay = day;
+                this.editField = field;
+                const entry = this.entries[day] || { start: '', lunch: 0, end: '', job: '', notes: '', materials: '' };
+
+                if (field === 'start') {
+                    document.getElementById('modalTitle').textContent = `Start - ${day}`;
+                    document.getElementById('timeInput').value = entry.start || this.getNow();
+                    this.showModal('timeInput');
+                } else if (field === 'end') {
+                    document.getElementById('modalTitle').textContent = `End - ${day}`;
+                    document.getElementById('timeInput').value = entry.end || this.getNow();
+                    this.showModal('timeInput');
+                } else if (field === 'lunch') {
+                    document.getElementById('modalTitle').textContent = `Lunch - ${day}`;
+                    let html = '<label style="display:block;margin-bottom:10px;font-weight:600;">Duration</label>';
+                    html += '<div class="lunch-options">';
+                    [0, 30, 40, 45, 60].forEach(m => {
+                        const lbl = m === 0 ? 'None' : m === 60 ? '1h' : `${m}m`;
+                        const cls = entry.lunch === m ? ' active' : '';
+                        html += `<button class="lunch-btn${cls}" onclick="app.setLunch(${m})">${lbl}</button>`;
+                    });
+                    html += '</div>';
+                    document.getElementById('lunchSelector').innerHTML = html;
+                    this.showModal('lunchSelector');
+                } else if (field === 'job') {
+                    document.getElementById('modalTitle').textContent = `Job/Client - ${day}`;
+                    document.getElementById('jobInput').value = entry.job || '';
+                    this.showModal('jobInput');
+                    setTimeout(() => document.getElementById('jobInput').focus(), 100);
+                } else if (field === 'notes') {
+                    document.getElementById('modalTitle').textContent = `Notes - ${day}`;
+                    document.getElementById('notesInput').value = entry.notes || '';
+                    document.getElementById('materialsInput').value = entry.materials || '';
+                    this.showModal('notesInput', 'materialsInput');
+                }
+            },
+
+            showModal(...ids) {
+                document.getElementById('timeInput').style.display = 'none';
+                document.getElementById('jobInput').style.display = 'none';
+                document.getElementById('notesInput').style.display = 'none';
+                document.getElementById('materialsInput').style.display = 'none';
+                document.getElementById('lunchSelector').style.display = 'none';
+                ids.forEach(id => document.getElementById(id).style.display = 'block');
+                document.getElementById('modal').classList.add('show');
+            },
+
+            async saveModal() {
+                if (!this.entries[this.editDay]) {
+                    this.entries[this.editDay] = { start: '', lunch: 0, end: '', job: '', notes: '', materials: '' };
+                }
+                
+                const entry = this.entries[this.editDay];
+                
+                if (this.editField === 'start' || this.editField === 'end') {
+                    entry[this.editField] = document.getElementById('timeInput').value;
+                } else if (this.editField === 'job') {
+                    entry.job = document.getElementById('jobInput').value;
+                } else if (this.editField === 'notes') {
+                    entry.notes = document.getElementById('notesInput').value;
+                    entry.materials = document.getElementById('materialsInput').value;
+                }
+                
+                await this.saveToSupabase(this.editDay);
+                this.closeModal();
+                this.renderTable();
+            },
+
+            async saveToSupabase(day) {
+                const entry = this.entries[day];
+                
+                const { error } = await supabase
+                    .from('time_entries')
+                    .upsert({
+                        user_id: this.workerId,
+                        day: day,
+                        week_offset: this.week,
+                        start_time: entry.start,
+                        end_time: entry.end,
+                        lunch_mins: entry.lunch,
+                        job: entry.job,
+                        notes: entry.notes,
+                        materials: entry.materials
+                    });
+                
+                if (error) console.error('Save error:', error);
+            },
+
+            setLunch(m) {
+                if (!this.entries[this.editDay]) {
+                    this.entries[this.editDay] = { start: '', lunch: 0, end: '', job: '', notes: '', materials: '' };
+                }
+                this.entries[this.editDay].lunch = m;
+                this.saveToSupabase(this.editDay);
+                this.closeModal();
+                this.renderTable();
+            },
+
+            closeModal() {
+                document.getElementById('modal').classList.remove('show');
+            },
+
+            async prevWeek() {
+                this.week--;
+                this.updateWeekLabel();
+                await this.loadEntries();
+            },
+
+            async nextWeek() {
+                this.week++;
+                this.updateWeekLabel();
+                await this.loadEntries();
+            },
+
+            updateWeekLabel() {
+                const d = this.getWeekDates();
+                document.getElementById('weekLabel').textContent = `Mon ${d.monDay} - Fri ${d.friDay} ${d.month}`;
+            },
+
+            async clearWeek() {
+                if (!confirm('Clear all entries for this week?')) return;
+                
+                const { error } = await supabase
+                    .from('time_entries')
+                    .delete()
+                    .eq('user_id', this.workerId)
+                    .eq('week_offset', this.week);
+                
+                if (!error) {
+                    this.entries = {};
+                    this.renderTable();
+                }
+            },
+
+            exportCSV() {
+                let csv = 'Day,Start,Lunch,End,Hours,Pay,Job,Notes,Materials\n';
+                const rate = this.RATES[this.worker];
+                this.DAYS.forEach(day => {
+                    const e = this.entries[day] || { start: '', lunch: 0, end: '', job: '', notes: '', materials: '' };
+                    let m = this.calcMins(e.start, e.end);
+                    if (e.lunch > 0) m = Math.max(0, m - e.lunch);
+                    const h = this.formatMins(m);
+                    const p = (m / 60 * rate).toFixed(2);
+                    const esc = (s) => `"${(s || '').replace(/"/g, '""')}"`;
+                    csv += `${day},${e.start || '—'},${e.lunch > 0 ? e.lunch + 'm' : '—'},${e.end || '—'},${h},$${p},${esc(e.job)},${esc(e.notes)},${esc(e.materials)}\n`;
+                });
+                const link = document.createElement('a');
+                link.href = 'data:text/csv,' + encodeURIComponent(csv);
+                link.download = `timesheet-${this.worker}.csv`;
+                link.click();
+            },
+
+            downloadPayslipHtml() {
+                let total = 0;
+                const rate = this.RATES[this.worker];
+                this.DAYS.forEach(day => {
+                    const e = this.entries[day] || { start: '', lunch: 0, end: '', job: '', notes: '', materials: '' };
+                    let m = this.calcMins(e.start, e.end);
+                    if (e.lunch > 0) m = Math.max(0, m - e.lunch);
+                    total += m;
+                });
+                const h = (total / 60).toFixed(2);
+                const g = (parseFloat(h) * rate).toFixed(2);
+                const ded = this.DEDUCTIONS[this.worker];
+                const s = (parseFloat(g) * (ded.super / 3015.04)).toFixed(2);
+                const t = (parseFloat(g) * (ded.tax / 3015.04)).toFixed(2);
+                const net = (parseFloat(g) - parseFloat(s) - parseFloat(t)).toFixed(2);
+                const d = this.getWeekDates();
+
+                const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payslip</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;background:#f5f5f5;padding:20px}.c{background:white;padding:40px;max-width:650px;margin:0 auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.1)}.h{border-bottom:3px solid #D4845C;padding-bottom:20px;margin-bottom:30px}.co{font-size:24px;font-weight:bold;color:#D4845C}.ab{font-size:12px;color:#666;margin-top:5px}.i{display:flex;justify-content:space-between;margin-top:10px;font-size:13px}h2{font-size:16px;margin:20px 0 15px 0}table{width:100%;border-collapse:collapse}th{background:#f9f9f9;padding:12px;text-align:left;font-weight:bold;border-bottom:2px solid #D4845C}td{padding:12px;border-bottom:1px solid #eee}.a{text-align:right;font-weight:bold}.t{background:#f9f9f9;font-weight:bold}.f{margin-top:40px;padding-top:20px;border-top:1px solid #ddd;text-align:center;font-size:11px;color:#999}</style></head><body><div class="c"><div class="h"><div class="co">ANL CONSTRUCTIONS</div><div class="ab">ABN: ${this.ABN}</div><div class="i"><span><strong>Employee:</strong> ${this.FULLNAMES[this.worker]}</span><span><strong>Rate:</strong> $${rate.toFixed(2)}/hr</span></div><div class="i"><span><strong>TFN:</strong> ${this.TFN[this.worker]}</span><span><strong>Pay Period:</strong> ${d.monDate} to ${d.friDate}</span></div><div class="i"><span><strong>Hours:</strong> ${h}</span></div></div><h2>EARNINGS & DEDUCTIONS</h2><table><thead><tr><th>Item</th><th class="a">Amount</th></tr></thead><tbody><tr><td>Gross Pay</td><td class="a">$${g}</td></tr><tr><td>Superannuation</td><td class="a">$${s}</td></tr><tr><td>Income Tax</td><td class="a">-$${t}</td></tr><tr class="t"><td>NET PAY</td><td class="a">$${net}</td></tr></tbody></table><div class="f"><p>Generated: ${new Date().toLocaleString('en-AU')}</p><p>ANL Constructions</p></div></div></body></html>`;
+
+                const link = document.createElement('a');
+                link.href = 'data:text/html,' + encodeURIComponent(html);
+                link.download = `payslip-${this.worker}.html`;
+                link.click();
+            },
+
+            downloadPayslipCsv() {
+                let total = 0;
+                const rate = this.RATES[this.worker];
+                this.DAYS.forEach(day => {
+                    const e = this.entries[day] || { start: '', lunch: 0, end: '', job: '', notes: '', materials: '' };
+                    let m = this.calcMins(e.start, e.end);
+                    if (e.lunch > 0) m = Math.max(0, m - e.lunch);
+                    total += m;
+                });
+                const h = (total / 60).toFixed(2);
+                const g = (parseFloat(h) * rate).toFixed(2);
+                const ded = this.DEDUCTIONS[this.worker];
+                const s = (parseFloat(g) * (ded.super / 3015.04)).toFixed(2);
+                const t = (parseFloat(g) * (ded.tax / 3015.04)).toFixed(2);
+                const net = (parseFloat(g) - parseFloat(s) - parseFloat(t)).toFixed(2);
+                const d = this.getWeekDates();
+
+                let csv = 'ANL CONSTRUCTIONS PAYSLIP\n';
+                csv += `ABN,${this.ABN}\n\n`;
+                csv += `Employee,${this.FULLNAMES[this.worker]}\n`;
+                csv += `Tax File Number,${this.TFN[this.worker]}\n`;
+                csv += `Hourly Rate,$${rate.toFixed(2)}\n`;
+                csv += `Hours Worked,${h}\n`;
+                csv += `Pay Period,${d.monDate} to ${d.friDate}\n`;
+                csv += `Generated,${new Date().toLocaleString('en-AU')}\n\n`;
+                csv += 'Description,Amount\n';
+                csv += `Gross Pay,$${g}\n`;
+                csv += `Superannuation,$${s}\n`;
+                csv += `Income Tax,-$${t}\n`;
+                csv += `NET PAY,$${net}\n`;
+
+                const link = document.createElement('a');
+                link.href = 'data:text/csv,' + encodeURIComponent(csv);
+                link.download = `payslip-${this.worker}.csv`;
+                link.click();
+            }
+        };
+
+        // INIT
+        window.addEventListener('load', () => app.init());
+    </script>
+</body>
+</html>
