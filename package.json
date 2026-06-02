@@ -1,6 +1,7 @@
 {
-  "name": "anlconstructions",
-  "version": "1.0.0",
+  "name": "anlconstructions-timetracker",
+  "version": "2.0.0",
+  "description": "Time tracking app for AnlConstructions",
   "main": "api.js",
   "scripts": {
     "start": "node api.js",
