@@ -188,7 +188,10 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:8888/api';
+        // Auto-detect API URL based on where the app is hosted
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:8888/api' 
+            : `https://${window.location.hostname}/api`;
         let currentWorker = null;
         let currentWeekOffset = 0;
         let workers = [];
