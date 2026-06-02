@@ -64,7 +64,7 @@
         <label>Enter PIN</label>
         <input type="password" id="pin-input" maxlength="4" placeholder="0000" inputmode="numeric">
         
-        <button class="btn-primary" onclick="App.login()">LOGIN</button>
+        <button class="btn-primary" type="button" id="login-btn">LOGIN</button>
       </div>
     </div>
 
@@ -77,8 +77,8 @@
         <div class="clock" id="clock-display">00:00:00</div>
         
         <div class="button-row">
-          <button class="btn-success" onclick="App.checkIn()">✓ CHECK IN</button>
-          <button class="btn-danger" onclick="App.checkOut()">✗ CHECK OUT</button>
+          <button class="btn-success" type="button" id="checkin-btn">✓ CHECK IN</button>
+          <button class="btn-danger" type="button" id="checkout-btn">✗ CHECK OUT</button>
         </div>
 
         <label>Lunch Break</label>
@@ -109,8 +109,8 @@
         <label>Materials Needed</label>
         <textarea id="materials-input" placeholder="Concrete, nails, timber..." style="height: 80px;"></textarea>
 
-        <button class="btn-success" onclick="App.save()" style="margin-bottom: 12px;">💾 SAVE ENTRY</button>
-        <button class="btn-secondary" onclick="App.logout()">LOGOUT</button>
+        <button class="btn-success" type="button" id="save-btn" style="margin-bottom: 12px;">💾 SAVE ENTRY</button>
+        <button class="btn-secondary" type="button" id="logout-btn">LOGOUT</button>
       </div>
     </div>
   </div>
@@ -129,9 +129,19 @@
       entries: {},
 
       init() {
+        console.log('App initializing');
         this.renderWorkers();
         this.updateClock();
         setInterval(() => this.updateClock(), 1000);
+        
+        // Attach event listeners
+        document.getElementById('login-btn').addEventListener('click', () => this.login());
+        document.getElementById('checkin-btn').addEventListener('click', () => this.checkIn());
+        document.getElementById('checkout-btn').addEventListener('click', () => this.checkOut());
+        document.getElementById('save-btn').addEventListener('click', () => this.save());
+        document.getElementById('logout-btn').addEventListener('click', () => this.logout());
+        
+        console.log('App ready');
       },
 
       renderWorkers() {
@@ -141,18 +151,18 @@
           btn.type = 'button';
           btn.className = 'worker-btn';
           btn.textContent = name + ' • $' + WORKERS[name].rate.toFixed(2) + '/hr';
-          btn.onclick = () => this.selectWorker(name, btn);
+          btn.addEventListener('click', () => {
+            this.selectedWorker = name;
+            document.querySelectorAll('.worker-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            console.log('Selected worker:', name);
+          });
           list.appendChild(btn);
         });
       },
 
-      selectWorker(name, btn) {
-        this.selectedWorker = name;
-        document.querySelectorAll('.worker-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-      },
-
       login() {
+        console.log('Login clicked');
         const pin = document.getElementById('pin-input').value;
         const err = document.getElementById('login-error');
         err.classList.add('hidden');
@@ -160,12 +170,14 @@
         if (!this.selectedWorker) {
           err.textContent = 'Please select a worker';
           err.classList.remove('hidden');
+          console.log('No worker selected');
           return;
         }
 
         if (pin.length !== 4) {
           err.textContent = 'PIN must be 4 digits';
           err.classList.remove('hidden');
+          console.log('PIN invalid');
           return;
         }
 
@@ -173,10 +185,12 @@
         if (pin !== worker.pin) {
           err.textContent = 'Invalid PIN';
           err.classList.remove('hidden');
+          console.log('PIN mismatch');
           return;
         }
 
         // Success
+        console.log('Login successful for', this.selectedWorker);
         this.user = { name: this.selectedWorker, ...worker };
         document.getElementById('page-login').classList.add('hidden');
         document.getElementById('page-tracker').classList.remove('hidden');
@@ -185,12 +199,13 @@
       },
 
       logout() {
+        console.log('Logout clicked');
         this.user = null;
         this.selectedWorker = null;
         document.getElementById('page-tracker').classList.add('hidden');
         document.getElementById('page-login').classList.remove('hidden');
         document.getElementById('pin-input').value = '';
-        document.getElementById('worker-list').querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+        document.querySelectorAll('.worker-btn').forEach(b => b.classList.remove('selected'));
       },
 
       updateClock() {
@@ -202,6 +217,7 @@
       },
 
       async checkIn() {
+        console.log('Check in clicked');
         const day = this.getDay();
         const time = new Date().toISOString();
         
@@ -218,10 +234,13 @@
         if (res.ok) {
           this.showMessage('✓ Checked in');
           this.loadEntries();
+        } else {
+          console.error('Check in failed');
         }
       },
 
       async checkOut() {
+        console.log('Check out clicked');
         const day = this.getDay();
         const time = new Date().toISOString();
 
@@ -238,10 +257,13 @@
         if (res.ok) {
           this.showMessage('✓ Checked out');
           this.loadEntries();
+        } else {
+          console.error('Check out failed');
         }
       },
 
       async save() {
+        console.log('Save clicked');
         const day = this.getDay();
         const lunch = parseInt(document.getElementById('lunch-select').value);
         const job = document.getElementById('job-input').value;
@@ -262,10 +284,13 @@
         if (res.ok) {
           this.showMessage('✅ Entry saved');
           this.loadEntries();
+        } else {
+          console.error('Save failed');
         }
       },
 
       async loadEntries() {
+        console.log('Loading entries for', this.user.id);
         const res = await fetch('/api/entries/' + this.user.id);
         if (res.ok) {
           const data = await res.json();
@@ -275,6 +300,7 @@
               this.entries[entry.day] = entry;
             });
           }
+          console.log('Entries loaded:', this.entries);
         }
         this.renderWeek();
       },
@@ -320,7 +346,12 @@
       }
     };
 
-    App.init();
+    // Start app when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => App.init());
+    } else {
+      App.init();
+    }
   </script>
 </body>
 </html>
