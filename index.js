@@ -1,13 +1,15 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://tzwsdqbrtohcxzvdfwdw.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || 'sb_publishable_frfpPpx6hXMGRdsJrDlW_A_9WTKqN1l';
+const SUPABASE_URL = 'https://tzwsdqbrtohcxzvdfwdw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_frfpPpx6hXMGRdsJrDlW_A_9WTKqN1l';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -130,6 +132,16 @@ app.get('/api/entries/:user_id', async (req, res) => {
   } catch (err) {
     res.status(500).json([]);
   }
+});
+
+// Catch-all for SPA
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`✅ Time Tracker API running on port ${PORT}`);
 });
 
 module.exports = app;

@@ -2,10 +2,10 @@
   "name": "anlconstructions-timetracker",
   "version": "2.0.0",
   "description": "Time tracking app for AnlConstructions",
-  "main": "api.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node api.js",
-    "dev": "node api.js"
+    "start": "node index.js",
+    "build": "echo 'No build needed'"
   },
   "dependencies": {
     "express": "^4.18.2",
