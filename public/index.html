@@ -3,40 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Time Tracker</title>
+  <title>AnlConstructions Time Tracker</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: sans-serif; background: #f5f5f5; }
-    .header { background: #667eea; color: white; padding: 20px; text-align: center; }
+    body { font-family: Arial, sans-serif; background: #f0f0f0; }
+    .header { background: #333; color: white; padding: 20px; text-align: center; }
     .container { max-width: 500px; margin: 20px auto; padding: 0 20px; }
-    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    h1 { font-size: 24px; margin-bottom: 20px; }
+    .page { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h1 { font-size: 24px; margin-bottom: 10px; }
     h2 { font-size: 20px; margin-bottom: 20px; }
-    h3 { font-size: 16px; margin: 20px 0 12px; }
-    label { display: block; font-weight: bold; margin: 12px 0 6px; }
-    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; margin-bottom: 12px; font-family: sans-serif; }
-    button { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-bottom: 8px; font-size: 14px; }
-    button:hover { background: #5568d3; }
-    button:active { background: #4451b8; }
-    .btn-logout { background: #666; }
-    .btn-logout:hover { background: #555; }
-    .btn-success { background: #22c55e; }
-    .btn-success:hover { background: #16a34a; }
-    .btn-danger { background: #ef4444; }
-    .btn-danger:hover { background: #dc2626; }
     .hidden { display: none; }
-    .error { color: red; background: #ffe0e0; padding: 10px; border-radius: 4px; margin-bottom: 12px; }
-    .success { color: green; background: #e0ffe0; padding: 10px; border-radius: 4px; margin-bottom: 12px; }
-    .clock { font-size: 40px; text-align: center; color: #667eea; margin: 20px 0; font-family: monospace; font-weight: bold; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 16px 0; }
-    .grid-full { grid-column: 1 / -1; }
-    .week { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 16px 0; }
-    .day { background: #f0f0f0; padding: 12px; text-align: center; border-radius: 4px; }
-    .day-name { font-weight: bold; font-size: 12px; margin-bottom: 6px; }
-    .day-hours { font-size: 16px; font-weight: bold; color: #667eea; }
-    .stat { background: #f0f0f0; padding: 12px; border-radius: 4px; text-align: center; }
-    .stat-label { font-size: 12px; color: #666; margin-bottom: 6px; }
-    .stat-value { font-size: 20px; font-weight: bold; color: #667eea; }
+    input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    button { width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer; color: white; }
+    .btn-primary { background: #0066cc; }
+    .btn-primary:hover { background: #0052a3; }
+    .btn-success { background: #28a745; }
+    .btn-success:hover { background: #218838; }
+    .btn-danger { background: #dc3545; }
+    .btn-danger:hover { background: #c82333; }
+    .btn-secondary { background: #6c757d; }
+    .btn-secondary:hover { background: #5a6268; }
+    label { display: block; font-weight: bold; margin-top: 12px; margin-bottom: 4px; }
+    .error { color: red; padding: 10px; background: #ffe0e0; border-radius: 4px; margin-bottom: 12px; }
+    .success-msg { color: green; padding: 10px; background: #e0ffe0; border-radius: 4px; margin-bottom: 12px; }
+    .clock { font-size: 48px; text-align: center; color: #333; margin: 20px 0; font-family: monospace; font-weight: bold; }
+    .week-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
+    .day { background: #f0f0f0; padding: 15px; text-align: center; border-radius: 4px; }
+    .day-name { font-weight: bold; font-size: 12px; }
+    .day-hours { font-size: 18px; font-weight: bold; color: #0066cc; margin-top: 8px; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
+    .stat-box { background: #f0f0f0; padding: 15px; text-align: center; border-radius: 4px; }
+    .stat-label { font-size: 12px; color: #666; }
+    .stat-value { font-size: 24px; font-weight: bold; color: #0066cc; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -46,231 +45,207 @@
   </div>
 
   <div class="container">
-    <div id="loginPage">
-      <div class="card">
-        <h2>LOGIN</h2>
-        <div id="loginErrorMsg" class="hidden error"></div>
-        
-        <label>Worker Name</label>
-        <select id="workerSelect">
-          <option value="">-- Select --</option>
-          <option value="Adam">Adam - $81.49/hr</option>
-          <option value="James">James - $48.65/hr</option>
-          <option value="Brady">Brady - $29.95/hr</option>
-          <option value="Drew">Drew - $81.49/hr</option>
-        </select>
-        
-        <label>PIN</label>
-        <input type="password" id="pinField" maxlength="4" placeholder="0000" inputmode="numeric">
-        
-        <button id="loginButton">LOGIN</button>
-      </div>
+    <!-- LOGIN PAGE -->
+    <div id="page-login" class="page">
+      <h2>Login</h2>
+      <div id="error-login" class="hidden error"></div>
+      
+      <label>Worker</label>
+      <select id="select-worker">
+        <option value="">-- Select --</option>
+        <option value="Adam">Adam ($81.49/hr)</option>
+        <option value="James">James ($48.65/hr)</option>
+        <option value="Brady">Brady ($29.95/hr)</option>
+        <option value="Drew">Drew ($81.49/hr)</option>
+      </select>
+      
+      <label>PIN</label>
+      <input type="password" id="input-pin" maxlength="4" placeholder="0000" inputmode="numeric">
+      
+      <button class="btn-primary" onclick="app_login()">Login</button>
     </div>
 
-    <div id="trackerPage" class="hidden">
-      <div class="card">
-        <h2 id="workerName"></h2>
-        <div id="trackerMessage" class="hidden success"></div>
-        
-        <div class="clock" id="timeDisplay">00:00:00</div>
-        
-        <div class="grid grid-full">
-          <button id="checkInButton" class="btn-success">CHECK IN</button>
-          <button id="checkOutButton" class="btn-danger">CHECK OUT</button>
+    <!-- TRACKER PAGE -->
+    <div id="page-tracker" class="hidden page">
+      <h2 id="title-worker"></h2>
+      <div id="msg-success" class="hidden success-msg"></div>
+      
+      <div class="clock" id="display-clock">00:00:00</div>
+      
+      <button class="btn-success" onclick="app_checkin()">✓ CHECK IN</button>
+      <button class="btn-danger" onclick="app_checkout()">✗ CHECK OUT</button>
+      
+      <label>Lunch Break (minutes)</label>
+      <select id="select-lunch">
+        <option value="0">None</option>
+        <option value="30">30</option>
+        <option value="45">45</option>
+        <option value="60">60</option>
+      </select>
+      
+      <h3 style="margin-top: 20px; margin-bottom: 12px;">Weekly Hours</h3>
+      <div class="week-grid" id="grid-week"></div>
+      
+      <div class="stats">
+        <div class="stat-box">
+          <div class="stat-label">Total Hours</div>
+          <div class="stat-value" id="value-hours">0.0</div>
         </div>
-
-        <label>Lunch Break</label>
-        <select id="lunchField">
-          <option value="0">No break</option>
-          <option value="30">30 min</option>
-          <option value="45">45 min</option>
-          <option value="60">1 hour</option>
-        </select>
-
-        <h3>Weekly Hours</h3>
-        <div class="week" id="weekDisplay"></div>
-
-        <div class="grid">
-          <div class="stat">
-            <div class="stat-label">Hours</div>
-            <div class="stat-value" id="hoursValue">0.0</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Pay</div>
-            <div class="stat-value" id="payValue">$0.00</div>
-          </div>
+        <div class="stat-box">
+          <div class="stat-label">Weekly Pay</div>
+          <div class="stat-value" id="value-pay">$0.00</div>
         </div>
-
-        <label>Job Location</label>
-        <input type="text" id="jobField" placeholder="e.g., 123 Main St">
-
-        <label>Materials</label>
-        <textarea id="materialsField" placeholder="Concrete, nails, timber..." style="height: 80px;"></textarea>
-
-        <button id="saveButton">SAVE ENTRY</button>
-        <button id="logoutButton" class="btn-logout">LOGOUT</button>
       </div>
+      
+      <label>Job Location</label>
+      <input type="text" id="input-job" placeholder="e.g. 123 Main St">
+      
+      <label>Materials</label>
+      <textarea id="input-materials" placeholder="Concrete, nails..." style="height: 80px;"></textarea>
+      
+      <button class="btn-primary" onclick="app_save()">SAVE ENTRY</button>
+      <button class="btn-secondary" onclick="app_logout()">Logout</button>
     </div>
   </div>
 
   <script>
-    const workers = {
+    const WORKERS = {
       'Adam': { id: 'ba97c403-596f-483b-8dd5-3c11131db62a', pin: '7264', rate: 81.49 },
       'James': { id: '7b309a07-cfea-4e78-8109-e7b7d40f4cf4', pin: '5891', rate: 48.65 },
       'Brady': { id: 'be3737d8-0235-4fb8-85a6-6150659a278f', pin: '3742', rate: 29.95 },
       'Drew': { id: '3397c62c-b85e-4cda-ac24-fd138b1eb74a', pin: '8159', rate: 81.49 }
     };
 
-    let currentUser = null;
+    let user = null;
     let entries = {};
 
-    // Initialize
-    window.addEventListener('load', function() {
-      updateTime();
-      setInterval(updateTime, 1000);
-      
-      document.getElementById('loginButton').addEventListener('click', doLogin);
-      document.getElementById('checkInButton').addEventListener('click', doCheckIn);
-      document.getElementById('checkOutButton').addEventListener('click', doCheckOut);
-      document.getElementById('saveButton').addEventListener('click', doSave);
-      document.getElementById('logoutButton').addEventListener('click', doLogout);
-    });
-
-    function updateTime() {
+    function tick() {
       const now = new Date();
       const h = String(now.getHours()).padStart(2, '0');
       const m = String(now.getMinutes()).padStart(2, '0');
       const s = String(now.getSeconds()).padStart(2, '0');
-      document.getElementById('timeDisplay').textContent = h + ':' + m + ':' + s;
+      document.getElementById('display-clock').textContent = h + ':' + m + ':' + s;
     }
 
-    function doLogin() {
-      console.log('LOGIN clicked');
-      const name = document.getElementById('workerSelect').value;
-      const pin = document.getElementById('pinField').value;
-      const msg = document.getElementById('loginErrorMsg');
+    setInterval(tick, 1000);
+    tick();
+
+    function app_login() {
+      const name = document.getElementById('select-worker').value;
+      const pin = document.getElementById('input-pin').value;
+      const err = document.getElementById('error-login');
       
-      msg.classList.add('hidden');
+      err.classList.add('hidden');
       
       if (!name) {
-        msg.textContent = 'Select a worker';
-        msg.classList.remove('hidden');
+        err.textContent = 'Select a worker';
+        err.classList.remove('hidden');
         return;
       }
       
       if (pin.length !== 4) {
-        msg.textContent = 'PIN must be 4 digits';
-        msg.classList.remove('hidden');
+        err.textContent = 'PIN must be 4 digits';
+        err.classList.remove('hidden');
         return;
       }
       
-      const worker = workers[name];
-      if (pin !== worker.pin) {
-        msg.textContent = 'Invalid PIN';
-        msg.classList.remove('hidden');
+      const w = WORKERS[name];
+      if (pin !== w.pin) {
+        err.textContent = 'Invalid PIN';
+        err.classList.remove('hidden');
         return;
       }
       
-      currentUser = { name: name, ...worker };
-      console.log('Logged in as', currentUser.name);
-      
-      document.getElementById('loginPage').classList.add('hidden');
-      document.getElementById('trackerPage').classList.remove('hidden');
-      document.getElementById('workerName').textContent = currentUser.name + "'s Time Tracker";
-      
-      loadEntries();
+      user = { name: name, ...w };
+      document.getElementById('page-login').classList.add('hidden');
+      document.getElementById('page-tracker').classList.remove('hidden');
+      document.getElementById('title-worker').textContent = user.name;
+      fetch_entries();
     }
 
-    function doCheckIn() {
-      console.log('CHECK IN clicked');
-      const day = getDay();
+    function app_logout() {
+      user = null;
+      entries = {};
+      document.getElementById('page-tracker').classList.add('hidden');
+      document.getElementById('page-login').classList.remove('hidden');
+      document.getElementById('select-worker').value = '';
+      document.getElementById('input-pin').value = '';
+    }
+
+    function app_checkin() {
+      const day = getday();
       const time = new Date().toISOString();
       
       fetch('/api/entry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: currentUser.id,
+          user_id: user.id,
           day: day,
           start_time: time
         })
-      }).then(r => r.json()).then(data => {
-        console.log('Check in result:', data);
-        showMessage('✓ Checked in');
-        loadEntries();
+      }).then(r => r.json()).then(d => {
+        show_msg('Checked in at ' + time);
+        fetch_entries();
       });
     }
 
-    function doCheckOut() {
-      console.log('CHECK OUT clicked');
-      const day = getDay();
+    function app_checkout() {
+      const day = getday();
       const time = new Date().toISOString();
       
       fetch('/api/entry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: currentUser.id,
+          user_id: user.id,
           day: day,
           end_time: time
         })
-      }).then(r => r.json()).then(data => {
-        console.log('Check out result:', data);
-        showMessage('✓ Checked out');
-        loadEntries();
+      }).then(r => r.json()).then(d => {
+        show_msg('Checked out at ' + time);
+        fetch_entries();
       });
     }
 
-    function doSave() {
-      console.log('SAVE clicked');
-      const day = getDay();
-      const lunch = parseInt(document.getElementById('lunchField').value);
-      const job = document.getElementById('jobField').value;
-      const materials = document.getElementById('materialsField').value;
+    function app_save() {
+      const day = getday();
+      const lunch = parseInt(document.getElementById('select-lunch').value);
+      const job = document.getElementById('input-job').value;
+      const materials = document.getElementById('input-materials').value;
       
       fetch('/api/entry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: currentUser.id,
+          user_id: user.id,
           day: day,
           lunch_mins: lunch,
           job: job,
           materials: materials
         })
-      }).then(r => r.json()).then(data => {
-        console.log('Save result:', data);
-        showMessage('✅ Saved');
-        loadEntries();
+      }).then(r => r.json()).then(d => {
+        show_msg('Entry saved');
+        fetch_entries();
       });
     }
 
-    function doLogout() {
-      console.log('LOGOUT clicked');
-      currentUser = null;
-      entries = {};
-      document.getElementById('trackerPage').classList.add('hidden');
-      document.getElementById('loginPage').classList.remove('hidden');
-      document.getElementById('pinField').value = '';
-      document.getElementById('workerSelect').value = '';
-    }
-
-    async function loadEntries() {
-      console.log('Loading entries for', currentUser.id);
-      const res = await fetch('/api/entries/' + currentUser.id);
-      const data = await res.json();
-      entries = {};
-      if (Array.isArray(data)) {
-        data.forEach(e => {
-          entries[e.day] = e;
+    function fetch_entries() {
+      fetch('/api/entries/' + user.id)
+        .then(r => r.json())
+        .then(data => {
+          entries = {};
+          if (Array.isArray(data)) {
+            data.forEach(e => {
+              entries[e.day] = e;
+            });
+          }
+          render_week();
         });
-      }
-      console.log('Entries:', entries);
-      renderWeek();
     }
 
-    function renderWeek() {
-      const grid = document.getElementById('weekDisplay');
+    function render_week() {
+      const grid = document.getElementById('grid-week');
       grid.innerHTML = '';
       const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
       let total = 0;
@@ -278,30 +253,32 @@
       days.forEach(day => {
         const e = entries[day];
         let h = 0;
+        
         if (e && e.start_time && e.end_time) {
-          const mins = (new Date(e.end_time) - new Date(e.start_time)) / 60000 - (e.lunch_mins || 0);
+          const ms = (new Date(e.end_time) - new Date(e.start_time));
+          const mins = ms / 60000 - (e.lunch_mins || 0);
           h = Math.max(0, mins / 60);
           total += h;
         }
-        
+
         const cell = document.createElement('div');
         cell.className = 'day';
         cell.innerHTML = '<div class="day-name">' + day + '</div><div class="day-hours">' + h.toFixed(1) + 'h</div>';
         grid.appendChild(cell);
       });
 
-      document.getElementById('hoursValue').textContent = total.toFixed(1);
-      document.getElementById('payValue').textContent = '$' + (total * currentUser.rate).toFixed(2);
+      document.getElementById('value-hours').textContent = total.toFixed(1);
+      document.getElementById('value-pay').textContent = '$' + (total * user.rate).toFixed(2);
     }
 
-    function showMessage(msg) {
-      const el = document.getElementById('trackerMessage');
+    function show_msg(msg) {
+      const el = document.getElementById('msg-success');
       el.textContent = msg;
       el.classList.remove('hidden');
       setTimeout(() => el.classList.add('hidden'), 2000);
     }
 
-    function getDay() {
+    function getday() {
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       return days[new Date().getDay()];
     }
